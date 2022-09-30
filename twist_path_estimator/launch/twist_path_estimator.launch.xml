@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="twist_path_estimator" exec="twist_path_estimator" name="twist_path_estimator" output="screen">
-  </node>
-</launch>
