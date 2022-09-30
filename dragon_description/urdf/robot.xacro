@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find dragon_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find dragon_description)/urdf/robot.trans" />
+<link name="base_link"/>
+
+<joint name="cugo_v3_left_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="cugo_v3_left_link"/>
+  <origin xyz="0 -0.0385 0" rpy="0 0 0"/>
+  <axis xyz="0 1 0"/>
+</joint>
+
+<link name="cugo_v3_left_link">
+  <visual>
+    <geometry>
+      <mesh filename="package://dragon_description/stl/cugo_v3_left.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="_"/>
+  </visual>
+</link>
+
+<joint name="cugo_v3_right_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="cugo_v3_right_link"/>
+  <origin xyz="0 0.0385 0" rpy="0 0 0"/>
+  <axis xyz="0 1 0"/>
+</joint>
+
+<link name="cugo_v3_right_link">
+  <visual>
+    <geometry>
+      <mesh filename="package://dragon_description/stl/cugo_v3_right.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="_"/>
+  </visual>
+</link>
+
+<joint name="upper_frame_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="upper_frame_link"/>
+  <origin xyz="0.073 0 0.069" rpy="0 0 0"/>
+  <axis xyz="0 1 0"/>
+</joint>
+
+<link name="upper_frame_link">
+  <visual>
+    <geometry>
+      <mesh filename="package://dragon_description/stl/upper_frame.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="_"/>
+  </visual>
+</link>
+
+<joint name="velodyne_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="velodyne"/>
+  <origin xyz="0.142898 0 0.386" rpy="0 0 0"/>
+  <axis xyz="0 1 0"/>
+</joint>
+
+<link name="velodyne">
+  <visual>
+    <geometry>
+      <mesh filename="package://dragon_description/stl/velodyne.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="_"/>
+  </visual>
+</link>
+
+<joint name="gnss_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="gnss_link"/>
+  <origin xyz="-0.067 -0.139 0.579" rpy="0 0 0"/>
+  <axis xyz="0 1 0"/>
+</joint>
+
+<link name="gnss_link">
+  <visual>
+    <geometry>
+      <mesh filename="package://dragon_description/stl/gnss.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="_"/>
+  </visual>
+</link>
+
+
+</robot>

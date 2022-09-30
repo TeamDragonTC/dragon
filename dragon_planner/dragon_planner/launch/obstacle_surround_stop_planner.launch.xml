@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="dragon_planner" exec="obstacle_surround_stop_planner_node" name="obstacle_surround_stop_planner_node">
+    <param from="$(find-pkg-share dragon_planner)/config/obstacle_surround_stop_planner.param.yaml"/>
+    <remap from="points_raw" to="velodyne_points"/>
+  </node>
+</launch>
