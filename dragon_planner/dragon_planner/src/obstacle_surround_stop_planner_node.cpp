@@ -211,7 +211,7 @@ public:
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    if(!safety_check_) {
+    if (!safety_check_) {
       marker.text = "Obstacle Stop";
       marker.color.r = 1.0f;
       marker.color.g = 0.0f;
@@ -221,7 +221,6 @@ public:
       marker.color.r = 1.0f;
       marker.color.g = 1.0f;
       marker.color.b = 1.0f;
-
     }
     marker.color.a = 1.0f;
     marker_publisher_->publish(marker);
