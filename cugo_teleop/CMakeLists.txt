@@ -19,10 +19,9 @@ ament_auto_find_build_dependencies()
 
 #include_directories(include ${OpenCV_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
-ament_auto_add_executable(cugo_teleop
-  src/cugo_teleop_node.cpp
+ament_auto_add_executable(cugo_teleop_twist_joy
+  src/cugo_teleop_twist_joy.cpp
 )
-
 #target_link_libraries(lidar_occlusion_simulator ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
@@ -33,6 +32,7 @@ endif()
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
+  scripts
 )
 
 install(FILES DESTINATION share/${PROJECT_NAME})
