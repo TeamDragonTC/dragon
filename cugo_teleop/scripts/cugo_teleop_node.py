@@ -12,7 +12,7 @@ class CugoTeleop(Node):
   def __init__(self):
     super().__init__("cugo_teleop_node")
 
-    self.ser = serial.Serial('/dev/ttyACM1', 115200)
+    self.ser = serial.Serial('/dev/arduino', 115200)
 
     self.twist_subscriber = self.create_subscription(Twist, "cmd_vel", self.callback, 10)
 
