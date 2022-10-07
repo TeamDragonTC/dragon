@@ -40,21 +40,20 @@ public:
   }
   ~OccupancyGridMap() = default;
 
-  geometry_msgs::msg::TransformStamped getTransform(
-    const std::string target_frame, const std::string source_frame, rclcpp::Time stamp)
+  geometry_msgs::msg::TransformStamped
+  getTransform(const std::string target_frame, const std::string source_frame, rclcpp::Time stamp)
   {
     geometry_msgs::msg::TransformStamped frame_transform;
     try {
-      frame_transform =
-        tf2_buffer_.lookupTransform(target_frame, source_frame, stamp, tf2::durationFromSec(0.5));
-    } catch (tf2::TransformException & ex) {
+      frame_transform = tf2_buffer_.lookupTransform(target_frame, source_frame, stamp, tf2::durationFromSec(0.5));
+    } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(get_logger(), "%s", ex.what());
     }
     return frame_transform;
   }
 
   void transformPointCloud(
-    pcl::PointCloud<pcl::PointXYZ>::Ptr input_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr & output_ptr,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr input_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr& output_ptr,
     const geometry_msgs::msg::TransformStamped frame_transform)
   {
     const Eigen::Affine3d frame_affine = tf2::transformToEigen(frame_transform);
@@ -70,8 +69,7 @@ public:
     pcl::fromROSMsg(*msg, *input_cloud);
 
     transformPointCloud(
-      input_cloud, transformed_cloud,
-      getTransform("base_link", msg->header.frame_id, msg->header.stamp));
+      input_cloud, transformed_cloud, getTransform("base_link", msg->header.frame_id, msg->header.stamp));
 
     nav_msgs::msg::OccupancyGrid grid_map;
     grid_map.info.width = width_ / resolution_;
@@ -89,8 +87,9 @@ public:
     grid_map.header.stamp = msg->header.stamp;
     grid_map.header.frame_id = "base_link";
 
-    for (auto & point : transformed_cloud->points) {
-      if (point.z < 0.5) continue;
+    for (auto& point : transformed_cloud->points) {
+      if (point.z < 0.5)
+        continue;
 
       const auto x = point.x - grid_map.info.origin.position.x;
       const auto y = point.y - grid_map.info.origin.position.y;
@@ -98,7 +97,8 @@ public:
       const int iy = static_cast<int>(std::floor(y / resolution_));
 
       int grid_index = grid_map.info.width * iy + ix;
-      if (cell_size <= grid_index) continue;
+      if (cell_size <= grid_index)
+        continue;
       grid_map.data[grid_index] = 100;
     }
 
@@ -116,11 +116,11 @@ private:
   double center_y_;
   std::vector<double> data_;
 
-  tf2_ros::Buffer tf2_buffer_{get_clock()};
-  tf2_ros::TransformListener tf2_listener_{tf2_buffer_};
+  tf2_ros::Buffer tf2_buffer_{ get_clock() };
+  tf2_ros::TransformListener tf2_listener_{ tf2_buffer_ };
 };
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto occupancy_grid_map = std::make_shared<OccupancyGridMap>();
