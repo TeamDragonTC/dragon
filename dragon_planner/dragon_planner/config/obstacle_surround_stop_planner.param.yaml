@@ -5,6 +5,8 @@
 
     leaf_size: 0.2
 
+    use_debug: true
+
     x_min: 0.2
 
     x_max: 2.0

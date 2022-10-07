@@ -42,6 +42,8 @@ public:
     z_min_ = this->declare_parameter("z_min", 0.0);
     z_max_ = this->declare_parameter("z_max", 0.0);
 
+    use_debug_ = this->declare_parameter("use_debug", false);
+
     std::vector<double> safety_foot_print =
       this->declare_parameter("foot_print", std::vector<double>(0.0, 0.0));
     for (std::size_t idx = 0; idx < safety_foot_print.size(); idx += 2) {
@@ -63,7 +65,8 @@ public:
     filtered_points_publisher_ =
       this->create_publisher<sensor_msgs::msg::PointCloud2>("filtered_points", 5);
     twist_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 5);
-    marker_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("marker", 5);
+    if (use_debug_)
+      marker_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("marker", 5);
   }
   ~ObstacleSurroundStopPlanner() = default;
 
@@ -186,44 +189,46 @@ public:
     filtered_points_msg.header.stamp = msg->header.stamp;
     filtered_points_publisher_->publish(filtered_points_msg);
 
-    geometry_msgs::msg::PolygonStamped polygon_stamped;
-    polygon_stamped.header.frame_id = "base_link";
-    polygon_stamped.header.stamp = msg->header.stamp;
-    polygon_stamped.polygon = safety_polygon_;
-    polygon_publisher_->publish(polygon_stamped);
+    if (use_debug_) {
+      geometry_msgs::msg::PolygonStamped polygon_stamped;
+      polygon_stamped.header.frame_id = "base_link";
+      polygon_stamped.header.stamp = msg->header.stamp;
+      polygon_stamped.polygon = safety_polygon_;
+      polygon_publisher_->publish(polygon_stamped);
 
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "base_link";
-    marker.header.stamp = msg->header.stamp;
-    marker.ns = "obstacle stop";
-    marker.id = 0;
+      visualization_msgs::msg::Marker marker;
+      marker.header.frame_id = "base_link";
+      marker.header.stamp = msg->header.stamp;
+      marker.ns = "obstacle stop";
+      marker.id = 0;
 
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+      marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+      marker.action = visualization_msgs::msg::Marker::ADD;
 
-    marker.scale.x = 0.5;
-    marker.scale.y = 0.5;
-    marker.scale.z = 0.5;
-    marker.pose.position.x = -0.5;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    if (!safety_check_) {
-      marker.text = "Obstacle Stop";
-      marker.color.r = 1.0f;
-      marker.color.g = 0.0f;
-      marker.color.b = 0.0f;
-    } else {
-      marker.text = "No Obstacle";
-      marker.color.r = 1.0f;
-      marker.color.g = 1.0f;
-      marker.color.b = 1.0f;
+      marker.scale.x = 0.5;
+      marker.scale.y = 0.5;
+      marker.scale.z = 0.5;
+      marker.pose.position.x = -0.5;
+      marker.pose.position.y = 0.0;
+      marker.pose.position.z = 0.0;
+      marker.pose.orientation.x = 0.0;
+      marker.pose.orientation.y = 0.0;
+      marker.pose.orientation.z = 0.0;
+      marker.pose.orientation.w = 1.0;
+      if (!safety_check_) {
+        marker.text = "Obstacle Stop";
+        marker.color.r = 1.0f;
+        marker.color.g = 0.0f;
+        marker.color.b = 0.0f;
+      } else {
+        marker.text = "No Obstacle";
+        marker.color.r = 1.0f;
+        marker.color.g = 1.0f;
+        marker.color.b = 1.0f;
+      }
+      marker.color.a = 1.0f;
+      marker_publisher_->publish(marker);
     }
-    marker.color.a = 1.0f;
-    marker_publisher_->publish(marker);
   }
 
 private:
@@ -237,6 +242,7 @@ private:
   double leaf_size_;
 
   bool safety_check_{true};
+  double use_debug_;
 
   double x_min_;
   double x_max_;
