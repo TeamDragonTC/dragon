@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="dragon_perception" exec="occupancy_grid_map_node" name="occupancy_grid_map_node" output="screen">
+  </node>
+</launch>
