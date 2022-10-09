@@ -17,6 +17,11 @@ ament_auto_add_executable(cugo_teleop_twist_joy
   src/cugo_teleop_twist_joy.cpp
 )
 
+ament_auto_add_executable(velocity_smoother
+  src/velocity_smoother_node.cpp
+  src/velocity_smoother.cpp
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

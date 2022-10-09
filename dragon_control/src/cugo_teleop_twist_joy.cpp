@@ -18,7 +18,7 @@ public:
   {
     geometry_msgs::msg::Twist twist;
     twist.linear.x = msg->axes[1];
-    twist.angular.z = msg->axes[3];
+    twist.angular.z = -1.0 * msg->axes[3];
     twist_publisher_->publish(twist);
   }
 

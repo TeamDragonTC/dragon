@@ -5,6 +5,7 @@
     <remap from="twist" to="cmd_vel_raw"/>
   </node>
 
-  <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen">
-  </node>
+  <include file="$(find-pkg-share dragon_control)/launch/velocity_smoother.launch.xml"/>
+
+  <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen"/>
 </launch>
