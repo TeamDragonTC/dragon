@@ -26,7 +26,7 @@
   <link name="cugo_v3_left_link">
     <visual>
       <geometry>
-        <mesh filename="package://dragon_description/stl/cugo_v3_left.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://dragon_description/meshes/cugo_v3_left.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="_"/>
     </visual>
@@ -40,7 +40,7 @@
   <link name="cugo_v3_right_link">
     <visual>
       <geometry>
-        <mesh filename="package://dragon_description/stl/cugo_v3_right.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://dragon_description/meshes/cugo_v3_right.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="_"/>
     </visual>
@@ -54,7 +54,7 @@
   <link name="upper_frame_link">
     <visual>
       <geometry>
-        <mesh filename="package://dragon_description/stl/upper_frame.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://dragon_description/meshes/upper_frame.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="_"/>
     </visual>
@@ -68,7 +68,7 @@
   <link name="velodyne">
     <visual>
       <geometry>
-        <mesh filename="package://dragon_description/stl/velodyne.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://dragon_description/meshes/velodyne.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="_"/>
     </visual>
@@ -82,7 +82,7 @@
   <link name="gnss_link">
     <visual>
       <geometry>
-        <mesh filename="package://dragon_description/stl/gnss.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://dragon_description/meshes/gnss.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="_"/>
     </visual>
