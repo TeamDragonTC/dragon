@@ -1,0 +1,11 @@
+<launch>
+  <node pkg="joy_linux" exec="joy_linux_node" name="joy_linux_node"/>
+
+  <node pkg="dragon_control" exec="cugo_teleop_twist_joy" name="cugo_teleop_twist_joy">
+    <remap from="twist" to="cmd_vel_raw"/>
+  </node>
+
+  <include file="$(find-pkg-share dragon_control)/launch/velocity_smoother.launch.xml"/>
+
+  <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen"/>
+</launch>
