@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>cugo_teleop</name>
+  <name>dragon_control</name>
   <version>0.0.0</version>
-  <description>The cugo_teleop package</description>
+  <description>The dragon_control package</description>
   <maintainer email="ryu.yamamoto@tier4.jp">RyuYamamoto</maintainer>
   <license>Apache License 2.0</license>
 

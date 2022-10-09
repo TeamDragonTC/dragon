@@ -24,7 +24,8 @@ public:
     serial_->set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
     serial_->set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
 
-    twist_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 5, std::bind(&CugoTeleop::callbackTwist, this, std::placeholders::_1));
+    twist_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
+      "cmd_vel", 5, std::bind(&CugoTeleop::callbackTwist, this, std::placeholders::_1));
 
     auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(1.0 / 1));
     timer_callback_ = rclcpp::create_timer(this, get_clock(), period, std::bind(&CugoTeleop::timerCallback, this));
@@ -32,7 +33,6 @@ public:
 
   void callbackJoy(const sensor_msgs::msg::Joy::SharedPtr msg)
   {
-
   }
 
   void callbackTwist(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -59,11 +59,12 @@ public:
 
   void timerCallback()
   {
-    if(send_str_.size() > 0) {
+    if (send_str_.size() > 0) {
       serial_->write_some(boost::asio::buffer(send_str_, send_str_.size()));
       std::cout << send_str_ << std::endl;
     }
   }
+
 private:
   double wheel_base_;
   double velocity_limit_;
@@ -78,7 +79,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_;
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto cugo_teleop = std::make_shared<CugoTeleop>();
