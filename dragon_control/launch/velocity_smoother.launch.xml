@@ -1,0 +1,17 @@
+<launch>
+  <arg name="velocity_gain" default="1.7"/>
+  <arg name="angular_gain" default="1.7"/>
+  <arg name="maximum_limit_vel" default="1.0"/>
+  <arg name="minimum_limit_vel" default="-1.0"/>
+  <arg name="in_twist" default="cmd_vel_raw"/>
+  <arg name="out_twist" default="cmd_vel"/>
+
+  <node pkg="dragon_control" exec="velocity_smoother" name="velocity_smoother">
+    <param name="velocity_gain" value="$(var velocity_gain)"/>
+    <param name="angular_gain" value="$(var angular_gain)"/>
+    <param name="maximum_limit_vel" value="$(var maximum_limit_vel)"/>
+    <param name="minimum_limit_vel" value="$(var minimum_limit_vel)"/>
+    <remap from="raw_cmd_vel" to="$(var in_twist)"/>
+    <remap from="filtered_cmd_vel" to="$(var out_twist)"/>
+  </node>
+</launch>

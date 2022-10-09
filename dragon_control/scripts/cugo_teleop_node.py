@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -33,7 +35,7 @@ class CugoTeleop(Node):
     target_vel[0] = min(max(-20, target_vel[0]), 20)
     target_vel[1] = min(max(-20, target_vel[1]), 20)
 
-    target_str = '{},{}\n'.format(int(target_vel[0]), int(target_vel[1]))
+    target_str = '{},{}\n'.format(int(target_vel[0]), -1*int(target_vel[1]))
 
     self.ser.write(target_str.encode())
 

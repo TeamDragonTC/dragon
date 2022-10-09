@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(dragon_control)
+project(dragon_bringup)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -13,15 +13,6 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(cugo_teleop_twist_joy
-  src/cugo_teleop_twist_joy.cpp
-)
-
-ament_auto_add_executable(velocity_smoother
-  src/velocity_smoother_node.cpp
-  src/velocity_smoother.cpp
-)
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -30,12 +21,7 @@ endif()
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
-  scripts
-)
-
-install(PROGRAMS
-  scripts/cugo_teleop_node.py
-  DESTINATION lib/${PROJECT_NAME}
+  rviz
 )
 
 install(FILES DESTINATION share/${PROJECT_NAME})

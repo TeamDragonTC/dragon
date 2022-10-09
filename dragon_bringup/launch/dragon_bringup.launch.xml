@@ -1,0 +1,14 @@
+<launch>
+  <!-- launch robot model -->
+  <include file="$(find-pkg-share dragon_bringup)/launch/tf.launch.py"/>
+
+  <!-- launch control module -->
+  <include file="$(find-pkg-share dragon_control)/launch/dragon_control.launch.xml"/>
+
+  <!-- launch sensing module -->
+
+  <!-- launch planning module -->
+
+  <!-- launch rviz -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share dragon_bringup)/rviz/dragon.rviz"/>
+</launch>
