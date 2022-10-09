@@ -28,4 +28,9 @@ ament_auto_package(
   scripts
 )
 
+install(PROGRAMS
+  scripts/cugo_teleop_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(FILES DESTINATION share/${PROJECT_NAME})
