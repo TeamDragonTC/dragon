@@ -3,18 +3,19 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-class TeleopTwistJoy : public rclcpp::Node {
+class TeleopTwistJoy : public rclcpp::Node
+{
 public:
-  TeleopTwistJoy() : Node("teleop_twist_joy") {
+  TeleopTwistJoy() : Node("teleop_twist_joy")
+  {
     joy_subscriber_ = this->create_subscription<sensor_msgs::msg::Joy>(
-        "joy", 5,
-        std::bind(&TeleopTwistJoy::callbackJoy, this, std::placeholders::_1));
-    twist_publisher_ =
-        this->create_publisher<geometry_msgs::msg::Twist>("twist", 5);
+      "joy", 5, std::bind(&TeleopTwistJoy::callbackJoy, this, std::placeholders::_1));
+    twist_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("twist", 5);
   }
   ~TeleopTwistJoy() = default;
 
-  void callbackJoy(const sensor_msgs::msg::Joy::SharedPtr msg) {
+  void callbackJoy(const sensor_msgs::msg::Joy::SharedPtr msg)
+  {
     geometry_msgs::msg::Twist twist;
     twist.linear.x = msg->axes[1];
     twist.angular.z = msg->axes[3];
@@ -26,7 +27,7 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_publisher_;
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto teleop_twist_joy = std::make_shared<TeleopTwistJoy>();
