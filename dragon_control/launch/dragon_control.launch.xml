@@ -5,8 +5,6 @@
     <remap from="twist" to="cmd_vel_raw"/>
   </node>
 
-  <include file="$(find-pkg-share dragon_planner)/launch/obstacle_surround_stop_planner.launch.xml"/>
-
   <node pkg="cugo_teleop" exec="cugo_teleop" name="cugo_teleop_node" output="screen">
     <param name="port_name" value="/dev/ttyACM0"/>
   </node>
