@@ -1,12 +1,10 @@
 <launch>
   <node pkg="joy_linux" exec="joy_linux_node" name="joy_linux_node"/>
 
-  <node pkg="dragon_planner" exec="cugo_teleop_twist_joy" name="cugo_teleop_twist_joy">
+  <node pkg="dragon_control" exec="cugo_teleop_twist_joy" name="cugo_teleop_twist_joy">
     <remap from="twist" to="cmd_vel_raw"/>
   </node>
 
-  <node pkg="dragon_planner exec="cugo_teleop" name="cugo_teleop_node" output="screen">
-    <param name="port_name" value="/dev/ttyACM0"/>
+  <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen">
   </node>
-
 </launch>
