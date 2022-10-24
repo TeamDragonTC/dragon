@@ -10,12 +10,15 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic )
 endif()
 
+find_package(backward_ros REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_executable(occupancy_grid_map_node
   src/occupancy_grid_map_node.cpp
 )
+
+add_backward(occupancy_grid_map_node)
 
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
   target_compile_definitions(occupancy_grid_map_node PUBLIC

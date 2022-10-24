@@ -1,4 +1,7 @@
 <launch>
   <node pkg="dragon_perception" exec="occupancy_grid_map_node" name="occupancy_grid_map_node" output="screen">
+    <param name="width" value="20.0"/>
+    <param name="height" value="20.0"/>
+    <param name="resolution" value="0.1"/>
   </node>
 </launch>

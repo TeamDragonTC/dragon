@@ -1,3 +1,4 @@
+#include <tf2/LinearMath/Vector3.h>
 #include <pcl/impl/point_types.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -29,9 +30,19 @@ public:
   {
     width_ = this->declare_parameter("width", 30.0);
     height_ = this->declare_parameter("height", 30.0);
-    resolution_ = this->declare_parameter("resolution", 0.1);
+    resolution_ = this->declare_parameter("resolution", 0.3);
 
     center_x_ = center_y_ = 0.0;
+
+    grid_map_.info.width = static_cast<int>(std::floor(width_ / resolution_));
+    grid_map_.info.height = std::floor(height_ / resolution_);
+    grid_map_.info.resolution = resolution_;
+    int cell_size = static_cast<int>(grid_map_.info.width * grid_map_.info.height);
+    grid_map_.data.resize(cell_size);
+
+    // gird mapの中心
+    grid_map_.info.origin.position.x = center_x_ - width_ / 2.0;
+    grid_map_.info.origin.position.y = center_y_ - height_ / 2.0;
 
     sensor_points_subscriber_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
       "velodyne_points", rclcpp::SensorDataQoS().keep_last(1),
@@ -61,6 +72,29 @@ public:
     pcl::transformPointCloud(*input_ptr, *output_ptr, frame_matrix);
   }
 
+  void ray_trace(int x1, int y1, int x2, int y2, nav_msgs::msg::OccupancyGrid &grid_map)
+  {
+    int dx = std::abs(x2 - x1);
+    int dy = -std::abs(y2 - y1);
+    int sx = x1 < x2 ? 1 : -1;
+    int sy = y1 < y2 ? 1 : -1;
+    int error = dx / 2;
+    
+    int error_2;
+    while((x1 != x2) && (y1 != y2)) {
+      grid_map.data[grid_map.info.width * y1 + x1] = 0;
+      error_2 = 2 * error;
+      if(error_2 > dy) {
+        error += dy;
+        x1 += sx;
+      }
+      if(error_2 < dx) {
+        error += dx;
+        y1 += sy;
+      }
+    }
+  }
+
   void sensorCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -69,40 +103,33 @@ public:
     pcl::fromROSMsg(*msg, *input_cloud);
 
     transformPointCloud(
-      input_cloud, transformed_cloud, getTransform("base_link", msg->header.frame_id, msg->header.stamp));
+      input_cloud, transformed_cloud, getTransform("velodyne", msg->header.frame_id, msg->header.stamp));
 
-    nav_msgs::msg::OccupancyGrid grid_map;
-    grid_map.info.width = width_ / resolution_;
-    grid_map.info.height = height_ / resolution_;
-    grid_map.info.resolution = resolution_;
+    for (int idx = 0; idx < grid_map_.data.size(); idx++)
+      grid_map_.data[idx] = 50;
+    grid_map_.header.stamp = msg->header.stamp;
+    grid_map_.header.frame_id = msg->header.frame_id;
 
-    int cell_size = static_cast<int>((width_ / resolution_) * (height_ / resolution_));
-    for (int idx = 0; idx < cell_size; idx++) {
-      grid_map.data.emplace_back(50);
+    for (auto& point : input_cloud->points) {
+      // filtering
+      if (point.z < 0.1 or 10.0 < point.z) continue;
+      double dist = std::sqrt(point.x * point.x + point.y * point.y);
+      if(std::isnan(point.x) or std::isnan(point.y) or std::isnan(point.z)) continue;
+
+      //const auto x = point.x - grid_map_.info.origin.position.x;
+      //const auto y = point.y - grid_map_.info.origin.position.y;
+      const int ix = static_cast<int>(std::floor(point.x / resolution_) + grid_map_.info.width / 2);
+      const int iy = static_cast<int>(std::floor(point.y / resolution_) + grid_map_.info.height / 2);
+
+      int grid_index = grid_map_.info.width * iy + ix;
+      if(grid_map_.info.width < ix or grid_map_.info.height < iy) continue;
+      //if(grid_map_.data.size() < grid_index) continue;
+      grid_map_.data[grid_index] = 100;
+
+      ray_trace(grid_map_.info.width/2, grid_map_.info.height/2, ix, iy, grid_map_);
     }
 
-    grid_map.info.origin.position.x = center_x_ - width_ / 2.0;
-    grid_map.info.origin.position.y = center_y_ - height_ / 2.0;
-
-    grid_map.header.stamp = msg->header.stamp;
-    grid_map.header.frame_id = "base_link";
-
-    for (auto& point : transformed_cloud->points) {
-      if (point.z < 0.5)
-        continue;
-
-      const auto x = point.x - grid_map.info.origin.position.x;
-      const auto y = point.y - grid_map.info.origin.position.y;
-      const int ix = static_cast<int>(std::floor(x / resolution_));
-      const int iy = static_cast<int>(std::floor(y / resolution_));
-
-      int grid_index = grid_map.info.width * iy + ix;
-      if (cell_size <= grid_index)
-        continue;
-      grid_map.data[grid_index] = 100;
-    }
-
-    occupancy_grid_publisher_->publish(grid_map);
+    occupancy_grid_publisher_->publish(grid_map_);
   }
 
 private:
@@ -115,6 +142,8 @@ private:
   double center_x_;
   double center_y_;
   std::vector<double> data_;
+
+  nav_msgs::msg::OccupancyGrid grid_map_;
 
   tf2_ros::Buffer tf2_buffer_{ get_clock() };
   tf2_ros::TransformListener tf2_listener_{ tf2_buffer_ };
