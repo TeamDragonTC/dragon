@@ -1,4 +1,3 @@
-#include <pcl/impl/point_types.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/node.hpp>

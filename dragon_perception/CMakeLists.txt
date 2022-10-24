@@ -10,7 +10,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic )
 endif()
 
-find_package(backward_ros REQUIRED)
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
@@ -18,14 +17,17 @@ ament_auto_add_executable(occupancy_grid_map_node
   src/occupancy_grid_map_node.cpp
 )
 
-add_backward(occupancy_grid_map_node)
+include_directories(
+  include
+  SYSTEM
+  ${PCL_INCLUDE_DIRS}
+)
 
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
   target_compile_definitions(occupancy_grid_map_node PUBLIC
     USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
   )
 endif()
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -35,7 +37,6 @@ endif()
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
-  config
 )
 
 install(FILES DESTINATION share/${PROJECT_NAME})

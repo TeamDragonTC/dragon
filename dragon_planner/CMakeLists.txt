@@ -17,6 +17,12 @@ ament_auto_add_executable(obstacle_surround_stop_planner_node
   src/obstacle_surround_stop_planner_node.cpp
 )
 
+include_directories(
+  include
+  SYSTEM
+  ${PCL_INCLUDE_DIRS}
+)
+
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
   target_compile_definitions(obstacle_surround_stop_planner_node PUBLIC
     USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
