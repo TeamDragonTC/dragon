@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(dragon_planner)
+project(dragon_perception)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -13,8 +13,8 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(obstacle_surround_stop_planner_node
-  src/obstacle_surround_stop_planner_node.cpp
+ament_auto_add_executable(occupancy_grid_map_node
+  src/occupancy_grid_map_node.cpp
 )
 
 include_directories(
@@ -24,11 +24,10 @@ include_directories(
 )
 
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(obstacle_surround_stop_planner_node PUBLIC
+  target_compile_definitions(occupancy_grid_map_node PUBLIC
     USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
   )
 endif()
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -38,7 +37,6 @@ endif()
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
-  config
 )
 
 install(FILES DESTINATION share/${PROJECT_NAME})
