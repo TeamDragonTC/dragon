@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>dragon_planner</name>
+  <name>obstacle_stop_planner</name>
   <version>0.0.0</version>
-  <description>The dragon_planner package</description>
+  <description>The obstacle_stop_planner package</description>
   <maintainer email="ryu.yamamoto@tier4.jp">RyuYamamoto</maintainer>
   <license>Apache License 2.0</license>
 
