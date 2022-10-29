@@ -4,65 +4,65 @@ ParticleFilterLocalization::ParticleFilterLocalization() : Node("particle_filter
 {
   particle_filter_ptr_ = std::make_shared<ParticleFilter>(100);
 
-  particle_pose_publisher_ =
-    this->create_publisher<geometry_msgs::msg::PoseStamped>("particle_pose", 1);
-  particle_array_publisher_ =
-    this->create_publisher<geometry_msgs::msg::PoseArray>("particle_array", 1);
-  ndt_pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "ndt_pose", 5,
-    std::bind(&ParticleFilterLocalization::callbackNDTPose, this, std::placeholders::_1));
-  twist_subscriber_ = this->create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
-    "twist_with_covariance", 5,
-    std::bind(&ParticleFilterLocalization::callbackTwist, this, std::placeholders::_1));
+  broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-  //timer_ = this->create_wall_timer(
-  //  std::chrono::microseconds(static_cast<int>(100 * 0.01)),
-  //  std::bind(&ParticleFilterLocalization::timerCallback, this));
+  particle_pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("particle_pose", 1);
+  particle_array_publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("particle_array", 1);
+  ndt_pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "ndt_pose", 5, std::bind(&ParticleFilterLocalization::callbackNDTPose, this, std::placeholders::_1));
+  twist_subscriber_ = this->create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
+    "twist_with_covariance", 5, std::bind(&ParticleFilterLocalization::callbackTwist, this, std::placeholders::_1));
+
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), rclcpp::Duration::from_seconds(0.01),
+    std::bind(&ParticleFilterLocalization::timerCallback, this));
 }
 
-void ParticleFilterLocalization::predict() {}
+void ParticleFilterLocalization::predict()
+{
+}
 
-void ParticleFilterLocalization::measure() {}
+void ParticleFilterLocalization::measure()
+{
+}
 
 void ParticleFilterLocalization::timerCallback()
 {
-  std::cout << "timer" << std::endl;
-  if (!init_) return;
+  if (!init_)
+    return;
 
   pubilshParticle(now());
 
-  particle_pose_publisher_->publish(estimatedPose());
-  auto pose = estimatedPose();
-  std::cout << pose.pose.position.x << " " << pose.pose.position.z << std::endl;
+  auto estimated_pose = estimatedPose();
+  publishTF("map", "base_link", estimated_pose);
+  particle_pose_publisher_->publish(estimated_pose);
 }
 
-void ParticleFilterLocalization::callbackTwist(
-  const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
+void ParticleFilterLocalization::callbackTwist(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
 {
-  if (!init_) return;
+  std::cout << "twist" << std::endl;
+  if (!init_)
+    return;
   if (previous_twist_ptr_ == nullptr) {
     previous_twist_ptr_ = msg;
     return;
   }
-  double dt =
-    (rclcpp::Time(msg->header.stamp) - rclcpp::Time(previous_twist_ptr_->header.stamp)).seconds();
+  double dt = (rclcpp::Time(msg->header.stamp) - rclcpp::Time(previous_twist_ptr_->header.stamp)).seconds();
 
   particle_filter_ptr_->predict(msg->twist.twist.linear.x, msg->twist.twist.angular.z, dt);
 
   previous_twist_ptr_ = msg;
 }
 
-void ParticleFilterLocalization::callbackNDTPose(
-  const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+void ParticleFilterLocalization::callbackNDTPose(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
+  std::cout << "ndt" << std::endl;
   current_pose_with_covariance_ = *msg;
 
   Eigen::VectorXd initial_pose(6);
   initial_pose(0) = msg->pose.pose.position.x;
   initial_pose(1) = msg->pose.pose.position.y;
   initial_pose(2) = msg->pose.pose.position.z;
-
-  std::cout << initial_pose(0) << " " << initial_pose(0) << std::endl;
 
   tf2::Quaternion quat(
     msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z,
@@ -81,7 +81,6 @@ void ParticleFilterLocalization::callbackNDTPose(
 
   particle_filter_ptr_->measure(initial_pose);
   particle_filter_ptr_->resampling();
-  particle_pose_publisher_->publish(estimatedPose());
 }
 
 void ParticleFilterLocalization::pubilshParticle(const rclcpp::Time stamp)
@@ -120,7 +119,7 @@ geometry_msgs::msg::PoseStamped ParticleFilterLocalization::estimatedPose()
   p_sum = Eigen::VectorXd::Zero(6);
 
   const auto particles = particle_filter_ptr_->getParticles();
-  for(auto particle : particles){
+  for (auto particle : particles) {
     weight_sum += particle.weight;
     p_sum += (particle.pose * particle.weight);
   }
@@ -138,8 +137,26 @@ geometry_msgs::msg::PoseStamped ParticleFilterLocalization::estimatedPose()
   estimated_pose.pose.orientation.z = quat.z();
   estimated_pose.pose.orientation.w = quat.w();
 
-
   return estimated_pose;
+}
+
+void ParticleFilterLocalization::publishTF(
+  const std::string frame_id, const std::string child_frame_id, const geometry_msgs::msg::PoseStamped pose)
+{
+  geometry_msgs::msg::TransformStamped transform_stamped;
+
+  transform_stamped.header.frame_id = frame_id;
+  transform_stamped.header.stamp = pose.header.stamp;
+  transform_stamped.child_frame_id = child_frame_id;
+  transform_stamped.transform.translation.x = pose.pose.position.x;
+  transform_stamped.transform.translation.y = pose.pose.position.y;
+  transform_stamped.transform.translation.z = pose.pose.position.z;
+  transform_stamped.transform.rotation.w = pose.pose.orientation.w;
+  transform_stamped.transform.rotation.x = pose.pose.orientation.x;
+  transform_stamped.transform.rotation.y = pose.pose.orientation.y;
+  transform_stamped.transform.rotation.z = pose.pose.orientation.z;
+
+  broadcaster_->sendTransform(transform_stamped);
 }
 
 // 最大尤度ver.
