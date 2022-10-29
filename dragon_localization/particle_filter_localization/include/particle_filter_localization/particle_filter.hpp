@@ -10,7 +10,7 @@
 struct Particle
 {
   Eigen::VectorXd pose;
-  double weight{1.0};
+  double weight{ 1.0 };
 };
 
 class ParticleFilter
@@ -37,7 +37,10 @@ public:
     }
   }
 
-  std::vector<Particle> getParticles() { return particles_; }
+  std::vector<Particle> getParticles()
+  {
+    return particles_;
+  }
 
   void setMeasuredVelocity(const double velocity, double omega)
   {
@@ -79,13 +82,12 @@ public:
   void measure(const Eigen::VectorXd pose)
   {
     for (std::size_t i = 0; i < particles_.size(); i++) {
-      double distance = std::sqrt(
-        std::pow(particles_.at(i).pose(0) - pose(0), 2) +
-        std::pow(particles_.at(i).pose(1) - pose(1), 2));
+      double distance =
+        std::sqrt(std::pow(particles_.at(i).pose(0) - pose(0), 2) + std::pow(particles_.at(i).pose(1) - pose(1), 2));
       double diff_yaw = diffRadian(particles_.at(i).pose(5), pose(5));
 
-      particles_.at(i).weight = std::exp(
-        -1 * (distance * distance / (2.0 * 0.04)) - 1 * (diff_yaw * diff_yaw / (2.0 * 0.01)));
+      particles_.at(i).weight =
+        std::exp(-1 * (distance * distance / (2.0 * 0.04)) - 1 * (diff_yaw * diff_yaw / (2.0 * 0.01)));
     }
     double total_weight = getTotalWeight();
     for (std::size_t i = 0; i < particles_.size(); i++) {
@@ -136,7 +138,8 @@ public:
         r += step;
       } else {
         idx++;
-        if (particle_size_ <= idx) break;
+        if (particle_size_ <= idx)
+          break;
       }
     }
     particles_ = new_particles;
@@ -144,7 +147,7 @@ public:
       particles_.at(idx).weight = 1.0 / particles_.size();
     }
   }
-  std::size_t particle_size_{100};
+  std::size_t particle_size_{ 100 };
 
   std::vector<Particle> particles_;
 

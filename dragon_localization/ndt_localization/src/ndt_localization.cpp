@@ -69,6 +69,11 @@ void NDTLocalization::crop(
   }
 }
 
+void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped &suggest_init_pose)
+{
+  pose_queue_.emplace_back(suggest_init_pose);
+}
+
 void NDTLocalization::mapCallback(const sensor_msgs::msg::PointCloud2 & map)
 {
   RCLCPP_INFO(get_logger(), "map callback");
@@ -171,7 +176,7 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & point
   if (convergenced) {
     ndt_pose_publisher_->publish(ndt_pose_msg);
     ndt_pose_with_covariance_publisher_->publish(ndt_pose_with_covariance_msg);
-    publishTF(map_frame_id_, base_frame_id_, ndt_pose_msg);
+    publishTF(map_frame_id_, "ndt_base_link", ndt_pose_msg);
   }
 
   std_msgs::msg::Float32 transform_probability;

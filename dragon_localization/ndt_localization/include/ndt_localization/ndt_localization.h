@@ -40,31 +40,28 @@ public:
   ~NDTLocalization() = default;
 
 private:
-  void mapCallback(const sensor_msgs::msg::PointCloud2 & map);
-  void pointsCallback(const sensor_msgs::msg::PointCloud2 & points);
-  void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped & initialpose);
+  void mapCallback(const sensor_msgs::msg::PointCloud2& map);
+  void pointsCallback(const sensor_msgs::msg::PointCloud2& points);
+  void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& initialpose);
+  void suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped& suggest_init_pose);
 
-  void downsample(
-    const pcl::PointCloud<PointType>::Ptr & input_cloud_ptr,
-    pcl::PointCloud<PointType>::Ptr & output_cloud_ptr);
+  void
+  downsample(const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr& output_cloud_ptr);
   void crop(
-    const pcl::PointCloud<PointType>::Ptr & input_cloud_ptr,
-    pcl::PointCloud<PointType>::Ptr output_cloud_ptr, const double min_range,
-    const double max_range);
+    const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr,
+    const double min_range, const double max_range);
 
-  void publishTF(
-    const std::string frame_id, const std::string child_frame_id,
-    const geometry_msgs::msg::PoseStamped pose);
+  void
+  publishTF(const std::string frame_id, const std::string child_frame_id, const geometry_msgs::msg::PoseStamped pose);
 
 private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr points_subscriber_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
-    initialpose_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initialpose_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr suggest_init_pose_subscriber_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr ndt_align_cloud_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr ndt_pose_publisher_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
-    ndt_pose_with_covariance_publisher_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ndt_pose_with_covariance_publisher_;
   rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr transform_probability_publisher_;
 
   // ndt_omp
@@ -72,9 +69,11 @@ private:
 
   geometry_msgs::msg::Pose initial_pose_;
 
-  tf2_ros::Buffer tf_buffer_{get_clock()};
-  tf2_ros::TransformListener tf_listener_{tf_buffer_};
+  tf2_ros::Buffer tf_buffer_{ get_clock() };
+  tf2_ros::TransformListener tf_listener_{ tf_buffer_ };
   std::shared_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
+
+  std::deque<geometry_msgs::msg::PoseStamped> pose_queue_;
 
   // config for ndt omp
   double transformation_epsilon_;
@@ -90,7 +89,7 @@ private:
   double min_range_;
   double max_range_;
 
-  bool localization_ready_{false};
+  bool localization_ready_{ false };
 };
 
 #endif

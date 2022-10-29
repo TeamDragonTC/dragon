@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="odom2twist" exec="odom2twist_node" name="odom2twist_node" output="screen">
+    <remap from="odom" to="odom"/>
+    <remap from="twist" to="twist"/>
+  </node>
+</launch>
