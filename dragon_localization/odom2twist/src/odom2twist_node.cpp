@@ -23,7 +23,8 @@ class OdomToTwist : public rclcpp::Node
 public:
   OdomToTwist() : Node("odom2twist")
   {
-    odom_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", 5, std::bind(&OdomToTwist::callbackOdom, this, std::placeholders::_1));
+    odom_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
+      "odom", 5, std::bind(&OdomToTwist::callbackOdom, this, std::placeholders::_1));
 
     twist_publisher_ = this->create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("twist", 5);
   }
@@ -36,7 +37,7 @@ public:
     geometry_msgs::msg::TwistWithCovarianceStamped twist_stamped;
 
     const double dt = (rclcpp::Time(msg->header.stamp) - rclcpp::Time(prev_odom.header.stamp)).seconds();
-    if(dt < 1e-05) {
+    if (dt < 1e-05) {
       twist_stamped.header = msg->header;
       twist_stamped.header.frame_id = "base_link";
       twist_publisher_->publish(twist_stamped);
@@ -52,8 +53,8 @@ public:
     twist_stamped.header = msg->header;
     twist_stamped.header.frame_id = "base_link";
     twist_stamped.twist.twist.linear.x = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2) + std::pow(dz, 2)) / dt;
-    twist_stamped.twist.twist.linear.y = 0.0;//dy / dt;
-    twist_stamped.twist.twist.linear.z = 0.0;//dz / dt;
+    twist_stamped.twist.twist.linear.y = 0.0;  //dy / dt;
+    twist_stamped.twist.twist.linear.z = 0.0;  //dz / dt;
     twist_stamped.twist.twist.angular.x = calcDiffForRadian(rpy.x, prev_rpy.x) / dt;
     twist_stamped.twist.twist.angular.y = calcDiffForRadian(rpy.y, prev_rpy.y) / dt;
     twist_stamped.twist.twist.angular.z = calcDiffForRadian(rpy.z, prev_rpy.z) / dt;
