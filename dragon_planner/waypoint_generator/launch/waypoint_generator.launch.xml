@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="waypoint_generator" exec="waypoint_generator_node" name="waypoint_generator_node" output="screen">
+    <param name="threshold" value="1.0"/>
+    <param name="way_point_csv_path" value="/home/haze/Desktop/waypoint.csv"/>
+    <remap from="pose_with_covariance" to="current_pose_with_covariance"/>
+  </node>
+</launch>
