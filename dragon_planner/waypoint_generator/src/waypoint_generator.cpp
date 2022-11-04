@@ -114,8 +114,8 @@ void WayPointGenerator::poseCallback(const geometry_msgs::msg::PoseWithCovarianc
   // clang-format on
 
   waypoint_marker_publisher_->publish(createMarker(
-    msg->pose.pose, visualization_msgs::msg::Marker::ARROW, id_++, std::to_string(way_point_id_),
-    createScale(0.5, 0.1, 0.1), createColor(1.0, 0.0, 1.0, 0.0)));
+    msg->pose.pose, visualization_msgs::msg::Marker::CYLINDER, id_++, std::to_string(way_point_id_),
+    createScale(0.2, 0.2, 0.1), createColor(0.7, 0.0, 1.0, 0.0)));
   waypoint_marker_publisher_->publish(createMarker(
     msg->pose.pose, visualization_msgs::msg::Marker::TEXT_VIEW_FACING, id_++, "ID:" + std::to_string(way_point_id_),
     createScale(0.3, 0.3, 0.3), createColor(1.0, 1.0, 1.0, 1.0)));
