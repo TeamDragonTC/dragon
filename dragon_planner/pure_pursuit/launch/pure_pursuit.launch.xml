@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-	<node name="pure_pursuit_node" pkg="pure_pursuit" exec="pure_pursuit_node" output="screen">
-		<param name="rate" value="0.1"/>
-		<param name="target_vel" value="0.2"/>
+  <node name="pure_pursuit_node" pkg="pure_pursuit" exec="pure_pursuit_node" output="screen">
+    <param name="rate" value="0.1"/>
+    <param name="target_vel" value="0.2"/>
     <param name="goal_threshold" value="0.2"/>
     <remap from="path" to="/planning/path"/>
     <remap from="pose_with_covariance" to="/localization/pose_with_covariance"/>
     <remap from="cmd_vel" to="/planning/plan_cmd_vel"/>
-	</node>
+  </node>
 </launch>
