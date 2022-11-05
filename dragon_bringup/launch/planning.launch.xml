@@ -1,0 +1,13 @@
+<launch>
+  <arg name="waypoint_path" default="waypoint.csv"/>
+
+  <node pkg="waypoint_generator" exec="interpolation_path.py" name="interpolation_path">
+    <param name="waypoint_path" value="$(var waypoint_path)"/>
+  </node>
+
+  <include file="$(find-pkg-share pure_pursuit)/launch/pure_pursuit.launch.xml"/>
+
+  <include file="$(find-pkg-share dragon_control)/launch/velocity_smoother.launch.xml"/>
+
+  <include file="$(find-pkg-share obstacle_stop_planner)/launch/obstacle_surround_stop_planner.launch.xml"/>
+</launch>

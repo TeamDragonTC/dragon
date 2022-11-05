@@ -7,12 +7,15 @@ PurePursuit::PurePursuit() : Node("pure_pursuit")
 {
   period_ = this->declare_parameter("period", 0.01);
   target_vel_ = this->declare_parameter("target_vel", 3.0);
+  goal_threshold_ = this->declare_parameter("goal_threshold", 0.2);
 
   broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
   velocity_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
   marker_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("robot_marker", 10);
 
+  cmd_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
+    "cmd", 1, std::bind(&PurePursuit::callbackCmd, this, std::placeholders::_1));
   pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "pose_with_covariance", 5, std::bind(&PurePursuit::callbackPose, this, std::placeholders::_1));
   path_subscriber_ = this->create_subscription<nav_msgs::msg::Path>(
@@ -29,11 +32,23 @@ void PurePursuit::setPath(const nav_msgs::msg::Path& msg)
     ref_path_.header.frame_id = msg.header.frame_id;
     ref_path_.header.stamp = msg.header.stamp;
     ref_path_.poses = msg.poses;
-  }
 
-  for (auto pose : ref_path_.poses) {
-    ref_x_.emplace_back(pose.pose.position.x);
-    ref_y_.emplace_back(pose.pose.position.y);
+    for (auto pose : ref_path_.poses) {
+      ref_x_.emplace_back(pose.pose.position.x);
+      ref_y_.emplace_back(pose.pose.position.y);
+    }
+
+    goal_x_ = ref_x_.back();
+    goal_y_ = ref_y_.back();
+  }
+}
+
+void PurePursuit::callbackCmd(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (init_path_) {
+    flag_ = msg->data;
+  } else {
+    RCLCPP_ERROR(get_logger(), "Path is Not Set.");
   }
 }
 
@@ -44,10 +59,8 @@ void PurePursuit::callbackPose(const geometry_msgs::msg::PoseWithCovarianceStamp
 
 void PurePursuit::timerCallback()
 {
-  if (!init_path_) {
-    RCLCPP_ERROR(get_logger(), "Not Found Path.");
+  if (flag_ or !init_path_)
     return;
-  }
 
   static double prev_steering_angle = 0.0;
   static auto prev_stamp = now();
@@ -65,6 +78,17 @@ void PurePursuit::timerCallback()
 
   prev_stamp = current_stamp;
   prev_steering_angle = steering_angle;
+
+  const double dx = goal_x_ - current_pose_.position.x;
+  const double dy = goal_y_ - current_pose_.position.y;
+  const double dist = std::sqrt(dx * dx + dy * dy);
+
+  if (dist < goal_threshold_) {
+    RCLCPP_INFO(get_logger(), "goal reached.");
+    init_path_ = false;
+    flag_ = true;
+    publishVelocity(0.0, 0.0);
+  }
 }
 
 // ロボットの姿勢を出力
