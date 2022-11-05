@@ -42,4 +42,9 @@ ament_auto_package(
   scripts
 )
 
+install(PROGRAMS
+  scripts/interpolation_path.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(FILES DESTINATION share/${PROJECT_NAME})

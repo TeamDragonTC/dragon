@@ -8,6 +8,8 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/path.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -26,6 +28,8 @@ public:
 
   void timerCallback();
   void callbackPose(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void callbackCmd(const std_msgs::msg::Bool::SharedPtr msg);
+  //void callbackJoyCmd(const sensor_msgs::msg::Joy::SharedPtr msg);
 
 private:
   void setPath(const nav_msgs::msg::Path& msg);
@@ -51,6 +55,7 @@ private:
     return yaw;
   }
 
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr cmd_subscriber_;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_subscriber_;
   rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_subscriber_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_publisher_;
@@ -62,6 +67,11 @@ private:
 
   geometry_msgs::msg::Pose current_pose_;
   nav_msgs::msg::Path ref_path_;
+
+  double goal_x_;
+  double goal_y_;
+  double goal_threshold_;
+  bool flag_{ true };
 
   std::vector<double> ref_x_, ref_y_;
   double current_vel_{ 0.0 };
