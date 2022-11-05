@@ -2,7 +2,7 @@
   <node pkg="obstacle_stop_planner" exec="obstacle_surround_stop_planner_node" name="obstacle_surround_stop_planner_node" output="screen">
     <param from="$(find-pkg-share obstacle_stop_planner)/config/obstacle_surround_stop_planner.param.yaml"/>
     <remap from="points_raw" to="obstacle_points"/>
-    <remap from="cmd_vel_in" to="cmd_vel_raw"/>
-    <remap from="cmd_vel_out" to="cmd_vel"/>
+    <remap from="cmd_vel_in" to="/planning/plan_cmd_vel"/>
+    <remap from="cmd_vel_out" to="/planning/safety_cmd_vel"/>
   </node>
 </launch>

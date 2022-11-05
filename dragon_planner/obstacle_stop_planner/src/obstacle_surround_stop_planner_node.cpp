@@ -164,7 +164,10 @@ public:
     downsample(input_cloud, filtered_cloud, leaf_size_);
     crop(filtered_cloud, crop_cloud);
 
-    if (crop_cloud->points.size() <= 0) return;
+    if (crop_cloud->points.empty()) {
+      safety_check_ = true;
+      return;
+    }
 
     crop_cloud->width = crop_cloud->points.size();
     crop_cloud->height = 1;
