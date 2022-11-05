@@ -1,14 +1,14 @@
 <launch>
   <arg name="map_path" default="$(find-pkg-share points_map_loader)/pcd/test.pcd"/>
   <arg name="rviz" default="true"/>
-  <arg name="min_range" default="2.0"/>
-  <arg name="max_range" default="60.0"/>
+  <arg name="min_range" default="5.0"/>
+  <arg name="max_range" default="100.0"/>
   <arg name="downsample_leaf_size" default="2.0"/>
   <arg name="transformation_epsilon" default="0.01"/>
   <arg name="step_size" default="0.1"/>
-  <arg name="ndt_resolution" default="2.0"/>
+  <arg name="ndt_resolution" default="1.0"/>
   <arg name="max_iteration" default="30"/>
-  <arg name="omp_num_thread" default="4"/>
+  <arg name="omp_num_thread" default="1"/>
   <arg name="map_frame_id" default="map"/>
   <arg name="base_frame_id" default="base_link"/>
 
