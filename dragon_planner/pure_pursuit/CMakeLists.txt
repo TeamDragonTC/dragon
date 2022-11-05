@@ -26,5 +26,3 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 ament_auto_package(INSTALL_TO_SHARE launch rviz)
-
-install(PROGRAMS scripts/cubic_spline_path.py DESTINATION lib/${PROJECT_NAME})
