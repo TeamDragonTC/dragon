@@ -72,23 +72,23 @@ public:
     pcl::transformPointCloud(*input_ptr, *output_ptr, frame_matrix);
   }
 
-  void ray_trace(int x1, int y1, int x2, int y2, nav_msgs::msg::OccupancyGrid &grid_map)
+  void ray_trace(int x1, int y1, int x2, int y2, nav_msgs::msg::OccupancyGrid& grid_map)
   {
     int dx = std::abs(x2 - x1);
     int dy = -std::abs(y2 - y1);
     int sx = x1 < x2 ? 1 : -1;
     int sy = y1 < y2 ? 1 : -1;
     int error = dx / 2;
-    
+
     int error_2;
-    while((x1 != x2) && (y1 != y2)) {
+    while ((x1 != x2) && (y1 != y2)) {
       grid_map.data[grid_map.info.width * y1 + x1] = 0;
       error_2 = 2 * error;
-      if(error_2 > dy) {
+      if (error_2 > dy) {
         error += dy;
         x1 += sx;
       }
-      if(error_2 < dx) {
+      if (error_2 < dx) {
         error += dx;
         y1 += sy;
       }
@@ -112,9 +112,11 @@ public:
 
     for (auto& point : input_cloud->points) {
       // filtering
-      if (point.z < 0.1 or 10.0 < point.z) continue;
+      if (point.z < 0.1 or 10.0 < point.z)
+        continue;
       double dist = std::sqrt(point.x * point.x + point.y * point.y);
-      if(std::isnan(point.x) or std::isnan(point.y) or std::isnan(point.z)) continue;
+      if (std::isnan(point.x) or std::isnan(point.y) or std::isnan(point.z))
+        continue;
 
       //const auto x = point.x - grid_map_.info.origin.position.x;
       //const auto y = point.y - grid_map_.info.origin.position.y;
@@ -122,11 +124,12 @@ public:
       const int iy = static_cast<int>(std::floor(point.y / resolution_) + grid_map_.info.height / 2);
 
       int grid_index = grid_map_.info.width * iy + ix;
-      if(grid_map_.info.width < ix or grid_map_.info.height < iy) continue;
+      if (grid_map_.info.width < ix or grid_map_.info.height < iy)
+        continue;
       //if(grid_map_.data.size() < grid_index) continue;
       grid_map_.data[grid_index] = 100;
 
-      ray_trace(grid_map_.info.width/2, grid_map_.info.height/2, ix, iy, grid_map_);
+      ray_trace(grid_map_.info.width / 2, grid_map_.info.height / 2, ix, iy, grid_map_);
     }
 
     occupancy_grid_publisher_->publish(grid_map_);

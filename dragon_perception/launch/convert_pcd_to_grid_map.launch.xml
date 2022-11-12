@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="dragon_perception" exec="convert_pcd_to_grid_map_node" name="convert_pcd_to_grid_map_node" output="screen">
+    <param name="width" value="350.0"/>
+    <param name="height" value="350.0"/>
+    <param name="resolution" value="0.5"/>
+    <param name="crop_max_z" value="0.1"/>
+    <param name="crop_min_z" value="-0.5"/>
+  </node>
+</launch>
