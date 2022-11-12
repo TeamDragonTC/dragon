@@ -17,6 +17,10 @@ ament_auto_add_executable(occupancy_grid_map_node
   src/occupancy_grid_map_node.cpp
 )
 
+ament_auto_add_executable(convert_pcd_to_grid_map_node
+  src/convert_pcd_to_grid_map_node.cpp
+)
+
 include_directories(
   include
   SYSTEM
