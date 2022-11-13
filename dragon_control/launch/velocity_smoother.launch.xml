@@ -1,8 +1,10 @@
 <launch>
   <arg name="velocity_gain" default="1.7"/>
   <arg name="angular_gain" default="1.7"/>
-  <arg name="maximum_limit_vel" default="1.0"/>
-  <arg name="minimum_limit_vel" default="-1.0"/>
+  <arg name="maximum_limit_vel" default="0.5"/>
+  <arg name="minimum_limit_vel" default="-0.5"/>
+  <arg name="maximum_limit_omega" default="0.25"/>
+  <arg name="minimum_limit_omega" default="-0.25"/>
   <arg name="in_twist" default="/planning/safety_cmd_vel"/>
   <arg name="out_twist" default="cmd_vel"/>
 
@@ -11,6 +13,8 @@
     <param name="angular_gain" value="$(var angular_gain)"/>
     <param name="maximum_limit_vel" value="$(var maximum_limit_vel)"/>
     <param name="minimum_limit_vel" value="$(var minimum_limit_vel)"/>
+    <param name="maximum_limit_omega" value="$(var maximum_limit_omega)"/>
+    <param name="minimum_limit_omega" value="$(var minimum_limit_omega)"/>
     <remap from="raw_cmd_vel" to="$(var in_twist)"/>
     <remap from="filtered_cmd_vel" to="$(var out_twist)"/>
   </node>
