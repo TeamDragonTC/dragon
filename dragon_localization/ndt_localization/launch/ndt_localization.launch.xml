@@ -3,7 +3,7 @@
   <arg name="rviz" default="true"/>
   <arg name="min_range" default="5.0"/>
   <arg name="max_range" default="100.0"/>
-  <arg name="downsample_leaf_size" default="2.0"/>
+  <arg name="downsample_leaf_size" default="3.0"/>
   <arg name="transformation_epsilon" default="0.01"/>
   <arg name="step_size" default="0.1"/>
   <arg name="ndt_resolution" default="1.0"/>

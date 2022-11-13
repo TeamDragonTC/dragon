@@ -31,6 +31,8 @@ private:
 
   double maximum_limit_vel_;
   double minimum_limit_vel_;
+  double maximum_limit_omega_;
+  double minimum_limit_omega_;
 };
 
 #endif

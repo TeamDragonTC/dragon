@@ -5,6 +5,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/float32.hpp>
 
 #include <tf2/transform_datatypes.h>
@@ -40,6 +41,7 @@ public:
   ~NDTLocalization() = default;
 
 private:
+  void imuCallback(const sensor_msgs::msg::Imu& imu);
   void mapCallback(const sensor_msgs::msg::PointCloud2& map);
   void pointsCallback(const sensor_msgs::msg::PointCloud2& points);
   void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& initialpose);
@@ -55,6 +57,7 @@ private:
   publishTF(const std::string frame_id, const std::string child_frame_id, const geometry_msgs::msg::PoseStamped pose);
 
 private:
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr points_subscriber_;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initialpose_subscriber_;
@@ -68,6 +71,7 @@ private:
   std::shared_ptr<pclomp::NormalDistributionsTransform<PointType, PointType>> ndt_;
 
   geometry_msgs::msg::Pose initial_pose_;
+  sensor_msgs::msg::Imu imu_data_;
 
   tf2_ros::Buffer tf_buffer_{ get_clock() };
   tf2_ros::TransformListener tf_listener_{ tf_buffer_ };

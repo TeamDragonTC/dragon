@@ -24,32 +24,29 @@ NDTLocalization::NDTLocalization() : Node("ndt_localization")
   ndt_->setResolution(ndt_resolution_);
   ndt_->setMaximumIterations(max_iteration_);
   ndt_->setNeighborhoodSearchMethod(pclomp::KDTREE);
-  if (0 < omp_num_thread_) ndt_->setNumThreads(omp_num_thread_);
+  if (0 < omp_num_thread_)
+    ndt_->setNumThreads(omp_num_thread_);
 
+  imu_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>(
+    "imu", 5, std::bind(&NDTLocalization::imuCallback, this, std::placeholders::_1));
   map_subscriber_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-    "points_map", rclcpp::QoS{1}.transient_local(),
+    "points_map", rclcpp::QoS{ 1 }.transient_local(),
     std::bind(&NDTLocalization::mapCallback, this, std::placeholders::_1));
   points_subscriber_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "points_raw", rclcpp::SensorDataQoS().keep_last(5),
     std::bind(&NDTLocalization::pointsCallback, this, std::placeholders::_1));
-  initialpose_subscriber_ =
-    this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-      "/initialpose", 1,
-      std::bind(&NDTLocalization::initialPoseCallback, this, std::placeholders::_1));
+  initialpose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "/initialpose", 1, std::bind(&NDTLocalization::initialPoseCallback, this, std::placeholders::_1));
 
-  ndt_align_cloud_publisher_ =
-    this->create_publisher<sensor_msgs::msg::PointCloud2>("aligned_cloud", 10);
+  ndt_align_cloud_publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("aligned_cloud", 10);
   ndt_pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("ndt_pose", 10);
   ndt_pose_with_covariance_publisher_ =
-    this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-      "ndt_pose_with_covariance", 10);
-  transform_probability_publisher_ =
-    this->create_publisher<std_msgs::msg::Float32>("transform_probability", 10);
+    this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("ndt_pose_with_covariance", 10);
+  transform_probability_publisher_ = this->create_publisher<std_msgs::msg::Float32>("transform_probability", 10);
 }
 
 void NDTLocalization::downsample(
-  const pcl::PointCloud<PointType>::Ptr & input_cloud_ptr,
-  pcl::PointCloud<PointType>::Ptr & output_cloud_ptr)
+  const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr& output_cloud_ptr)
 {
   pcl::VoxelGrid<PointType> voxel_grid;
   voxel_grid.setLeafSize(downsample_leaf_size_, downsample_leaf_size_, downsample_leaf_size_);
@@ -58,10 +55,10 @@ void NDTLocalization::downsample(
 }
 
 void NDTLocalization::crop(
-  const pcl::PointCloud<PointType>::Ptr & input_cloud_ptr,
-  pcl::PointCloud<PointType>::Ptr output_cloud_ptr, const double min_range, const double max_range)
+  const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr,
+  const double min_range, const double max_range)
 {
-  for (const auto & p : input_cloud_ptr->points) {
+  for (const auto& p : input_cloud_ptr->points) {
     const double dist = std::sqrt(p.x * p.x + p.y * p.y);
     if (min_range < dist && dist < max_range) {
       output_cloud_ptr->points.emplace_back(p);
@@ -69,12 +66,17 @@ void NDTLocalization::crop(
   }
 }
 
-void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped &suggest_init_pose)
+void NDTLocalization::imuCallback(const sensor_msgs::msg::Imu& imu)
+{
+  imu_data_ = imu;
+}
+
+void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped& suggest_init_pose)
 {
   pose_queue_.emplace_back(suggest_init_pose);
 }
 
-void NDTLocalization::mapCallback(const sensor_msgs::msg::PointCloud2 & map)
+void NDTLocalization::mapCallback(const sensor_msgs::msg::PointCloud2& map)
 {
   RCLCPP_INFO(get_logger(), "map callback");
 
@@ -84,7 +86,7 @@ void NDTLocalization::mapCallback(const sensor_msgs::msg::PointCloud2 & map)
   ndt_->setInputTarget(map_cloud);
 }
 
-void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & points)
+void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points)
 {
   if (ndt_->getInputTarget() == nullptr) {
     RCLCPP_ERROR(get_logger(), "map not received!");
@@ -97,6 +99,9 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & point
   }
 
   const rclcpp::Time current_scan_time = points.header.stamp;
+  static rclcpp::Time previous_scan_time = current_scan_time;
+
+  const double dt = (current_scan_time - previous_scan_time).seconds();
 
   pcl::PointCloud<PointType>::Ptr input_cloud_ptr(new pcl::PointCloud<PointType>);
   pcl::fromROSMsg(points, *input_cloud_ptr);
@@ -117,9 +122,9 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & point
   const std::string sensor_frame_id = points.header.frame_id;
   geometry_msgs::msg::TransformStamped sensor_frame_transform;
   try {
-    sensor_frame_transform = tf_buffer_.lookupTransform(
-      base_frame_id_, sensor_frame_id, current_scan_time, tf2::durationFromSec(0.5));
-  } catch (tf2::TransformException & ex) {
+    sensor_frame_transform =
+      tf_buffer_.lookupTransform(base_frame_id_, sensor_frame_id, current_scan_time, tf2::durationFromSec(0.5));
+  } catch (tf2::TransformException& ex) {
     RCLCPP_ERROR(get_logger(), "%s", ex.what());
     sensor_frame_transform.header.stamp = current_scan_time;
     sensor_frame_transform.header.frame_id = base_frame_id_;
@@ -133,10 +138,24 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & point
     sensor_frame_transform.transform.rotation.z = 0.0;
   }
   const Eigen::Affine3d base_to_sensor_frame_affine = tf2::transformToEigen(sensor_frame_transform);
-  const Eigen::Matrix4f base_to_sensor_frame_matrix =
-    base_to_sensor_frame_affine.matrix().cast<float>();
+  const Eigen::Matrix4f base_to_sensor_frame_matrix = base_to_sensor_frame_affine.matrix().cast<float>();
   pcl::transformPointCloud(*crop_cloud, *transform_cloud_ptr, base_to_sensor_frame_matrix);
   ndt_->setInputSource(transform_cloud_ptr);
+
+  // imu fusion
+  double roll, pitch, yaw;
+  tf2::Quaternion quat(
+    initial_pose_.orientation.x, initial_pose_.orientation.y, initial_pose_.orientation.z, initial_pose_.orientation.w);
+  tf2::Matrix3x3 mat(quat);
+  mat.getRPY(roll, pitch, yaw);
+  roll += (imu_data_.angular_velocity.x * dt);
+  pitch += (imu_data_.angular_velocity.y * dt);
+  yaw += (imu_data_.angular_velocity.z * dt);
+  quat.setRPY(roll, pitch, yaw);
+  initial_pose_.orientation.x = quat.x();
+  initial_pose_.orientation.y = quat.y();
+  initial_pose_.orientation.z = quat.z();
+  initial_pose_.orientation.w = quat.w();
 
   // calculation initial pose for NDT
   Eigen::Matrix4f init_guess = Eigen::Matrix4f::Identity();
@@ -187,26 +206,26 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2 & point
   pcl::toROSMsg(*output_cloud, aligned_cloud_msg);
   aligned_cloud_msg.header = points.header;
   ndt_align_cloud_publisher_->publish(aligned_cloud_msg);
+
+  previous_scan_time = current_scan_time;
 }
 
-void NDTLocalization::initialPoseCallback(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & initialpose)
+void NDTLocalization::initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& initialpose)
 {
   RCLCPP_INFO(get_logger(), "initial pose callback.");
   if (initialpose.header.frame_id == map_frame_id_) {
     initial_pose_ = initialpose.pose.pose;
-    if (!localization_ready_) localization_ready_ = true;
+    if (!localization_ready_)
+      localization_ready_ = true;
   } else {
     // TODO transform
     RCLCPP_INFO(
-      get_logger(), "frame_id is not same. initialpose.header.frame_id is %s",
-      initialpose.header.frame_id.c_str());
+      get_logger(), "frame_id is not same. initialpose.header.frame_id is %s", initialpose.header.frame_id.c_str());
   }
 }
 
 void NDTLocalization::publishTF(
-  const std::string frame_id, const std::string child_frame_id,
-  const geometry_msgs::msg::PoseStamped pose)
+  const std::string frame_id, const std::string child_frame_id, const geometry_msgs::msg::PoseStamped pose)
 {
   geometry_msgs::msg::TransformStamped transform_stamped;
 

@@ -6,6 +6,8 @@ VelocitySmoother::VelocitySmoother() : Node("velocity_smoother")
   angular_gain_ = this->declare_parameter<double>("angular_gain");
   maximum_limit_vel_ = this->declare_parameter<double>("maximum_limit_vel");
   minimum_limit_vel_ = this->declare_parameter<double>("minimum_limit_vel");
+  maximum_limit_omega_ = this->declare_parameter<double>("maximum_limit_omega");
+  minimum_limit_omega_ = this->declare_parameter<double>("minimum_limit_omega");
 
   raw_cmd_vel_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
     "raw_cmd_vel", 1, std::bind(&VelocitySmoother::twistCallback, this, std::placeholders::_1));
@@ -24,8 +26,8 @@ void VelocitySmoother::twistCallback(const geometry_msgs::msg::Twist msg)
   // check velocity limit
   target_cmd_vel_.linear.x = msg.linear.x > 0.0 ? std::min(msg.linear.x, maximum_limit_vel_)
                                                 : std::max(msg.linear.x, minimum_limit_vel_);
-  target_cmd_vel_.angular.z = msg.angular.z > 0.0 ? std::min(msg.angular.z, maximum_limit_vel_)
-                                                  : std::max(msg.angular.z, minimum_limit_vel_);
+  target_cmd_vel_.angular.z = msg.angular.z > 0.0 ? std::min(msg.angular.z, maximum_limit_omega_)
+                                                  : std::max(msg.angular.z, minimum_limit_omega_);
 }
 
 void VelocitySmoother::timerCallback()
