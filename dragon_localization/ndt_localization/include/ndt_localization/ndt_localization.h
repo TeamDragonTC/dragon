@@ -45,7 +45,7 @@ private:
   void mapCallback(const sensor_msgs::msg::PointCloud2& map);
   void pointsCallback(const sensor_msgs::msg::PointCloud2& points);
   void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& initialpose);
-  void suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped& suggest_init_pose);
+  void suggestInitPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& suggest_init_pose);
 
   void
   downsample(const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr& output_cloud_ptr);
@@ -61,7 +61,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr points_subscriber_;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initialpose_subscriber_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr suggest_init_pose_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr suggest_init_pose_subscriber_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr ndt_align_cloud_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr ndt_pose_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ndt_pose_with_covariance_publisher_;

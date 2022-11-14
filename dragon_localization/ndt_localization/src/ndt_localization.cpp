@@ -1,6 +1,5 @@
 #include <ndt_localization/ndt_localization.h>
 
-//#include <eigen_conversions/eigen_msg.h>
 #include <tf2_eigen/tf2_eigen.h>
 
 NDTLocalization::NDTLocalization() : Node("ndt_localization")
@@ -27,6 +26,8 @@ NDTLocalization::NDTLocalization() : Node("ndt_localization")
   if (0 < omp_num_thread_)
     ndt_->setNumThreads(omp_num_thread_);
 
+  suggest_init_pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "suggest_init_pose", 5, std::bind(&NDTLocalization::suggestInitPoseCallback, this, std::placeholders::_1));
   imu_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>(
     "imu", 5, std::bind(&NDTLocalization::imuCallback, this, std::placeholders::_1));
   map_subscriber_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -71,7 +72,7 @@ void NDTLocalization::imuCallback(const sensor_msgs::msg::Imu& imu)
   imu_data_ = imu;
 }
 
-void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped& suggest_init_pose)
+void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& suggest_init_pose)
 {
   pose_queue_.emplace_back(suggest_init_pose);
 }
@@ -142,6 +143,14 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
   pcl::transformPointCloud(*crop_cloud, *transform_cloud_ptr, base_to_sensor_frame_matrix);
   ndt_->setInputSource(transform_cloud_ptr);
 
+#if 0
+  // get latest initial pose
+  geometry_msgs::msg::PoseWithCovarianceStamped latest_pose;
+  for (auto pose : pose_queue_) {
+    if(current_scan_time < pose.header.stamp) {
+    }
+  }
+#endif
   // imu fusion
   double roll, pitch, yaw;
   tf2::Quaternion quat(

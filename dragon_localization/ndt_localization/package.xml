@@ -18,7 +18,6 @@
   <depend>tf2_eigen</depend>
   <depend>ndt_omp</depend>
 
-
   <export>
     <build_type>ament_cmake</build_type>
   </export>
