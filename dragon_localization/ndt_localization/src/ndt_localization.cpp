@@ -5,14 +5,29 @@
 
 NDTLocalization::NDTLocalization() : Node("ndt_localization")
 {
-  min_range_ = this->declare_parameter("min_range", 0.5);
-  max_range_ = this->declare_parameter("max_range", 60.0);
+  min_crop_vehicle_x_ = this->declare_parameter<double>("min_crop_vehicle_x");
+  max_crop_vehicle_x_ = this->declare_parameter<double>("max_crop_vehicle_x");
+  min_crop_vehicle_y_ = this->declare_parameter<double>("min_crop_vehicle_y");
+  max_crop_vehicle_y_ = this->declare_parameter<double>("max_crop_vehicle_y");
+
+  min_range_x_ = this->declare_parameter<double>("min_range_x");
+  max_range_x_ = this->declare_parameter<double>("max_range_x");
+  min_range_y_ = this->declare_parameter<double>("min_range_y");
+  max_range_y_ = this->declare_parameter<double>("max_range_y");
+  min_range_z_ = this->declare_parameter<double>("min_range_z");
+  max_range_z_ = this->declare_parameter<double>("max_range_z");
+
+  correct_translation_offset_ = this->declare_parameter<bool>("correct_translation_offset");
+  correct_orientation_offset_ = this->declare_parameter<bool>("correct_orientation_offset");
+
   downsample_leaf_size_ = this->declare_parameter("downsample_leaf_size", 3.0);
+
   transformation_epsilon_ = this->declare_parameter("transformation_epsilon", 0.01);
   step_size_ = this->declare_parameter("step_size", 0.1);
   ndt_resolution_ = this->declare_parameter("ndt_resolution", 5.0);
   max_iteration_ = this->declare_parameter("max_iteration", 20);
   omp_num_thread_ = this->declare_parameter("omp_num_thread", 3);
+
   map_frame_id_ = this->declare_parameter("map_frame_id", "map");
   base_frame_id_ = this->declare_parameter("base_frame_id", "base_link");
 
@@ -55,13 +70,14 @@ void NDTLocalization::downsample(
 }
 
 void NDTLocalization::crop(
-  const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr,
-  const double min_range, const double max_range)
+  const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr)
 {
   for (const auto& p : input_cloud_ptr->points) {
-    const double dist = std::sqrt(p.x * p.x + p.y * p.y);
-    if (min_range < dist && dist < max_range) {
-      output_cloud_ptr->points.emplace_back(p);
+    if (min_range_x_ < p.x < max_range_x_ and min_range_y_ < p.y < max_range_y_ and min_range_z_ < p.z < max_range_z_) {
+      if (
+        (p.x < min_crop_vehicle_x_ or max_crop_vehicle_x_ < p.x) and
+        (p.y < min_crop_vehicle_y_ or max_crop_vehicle_y_ < p.y))
+        output_cloud_ptr->points.emplace_back(p);
     }
   }
 }
@@ -112,7 +128,7 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
 
   // crop point cloud
   pcl::PointCloud<PointType>::Ptr crop_cloud(new pcl::PointCloud<PointType>);
-  crop(filtered_cloud, crop_cloud, min_range_, max_range_);
+  crop(filtered_cloud, crop_cloud);
 
   crop_cloud->width = crop_cloud->points.size();
   crop_cloud->height = 1;
@@ -148,14 +164,51 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
     initial_pose_.orientation.x, initial_pose_.orientation.y, initial_pose_.orientation.z, initial_pose_.orientation.w);
   tf2::Matrix3x3 mat(quat);
   mat.getRPY(roll, pitch, yaw);
-  roll += (imu_data_.angular_velocity.x * dt);
-  pitch += (imu_data_.angular_velocity.y * dt);
-  yaw += (imu_data_.angular_velocity.z * dt);
-  quat.setRPY(roll, pitch, yaw);
-  initial_pose_.orientation.x = quat.x();
-  initial_pose_.orientation.y = quat.y();
-  initial_pose_.orientation.z = quat.z();
-  initial_pose_.orientation.w = quat.w();
+
+  // corrent orientation
+  if (correct_orientation_offset_) {
+    double roll, pitch, yaw;
+    tf2::Quaternion quat(
+      initial_pose_.orientation.x, initial_pose_.orientation.y, initial_pose_.orientation.z,
+      initial_pose_.orientation.w);
+    tf2::Matrix3x3 mat(quat);
+    mat.getRPY(roll, pitch, yaw);
+    roll += (imu_data_.angular_velocity.x * dt);
+    pitch += (imu_data_.angular_velocity.y * dt);
+    yaw += (imu_data_.angular_velocity.z * dt);
+    quat.setRPY(roll, pitch, yaw);
+    initial_pose_.orientation.x = quat.x();
+    initial_pose_.orientation.y = quat.y();
+    initial_pose_.orientation.z = quat.z();
+    initial_pose_.orientation.w = quat.w();
+  }
+
+  // correct offset
+  if (correct_translation_offset_) {
+    double acc_x1 = imu_data_.linear_acceleration.x;
+    double acc_y1 = std::cos(roll) * imu_data_.linear_acceleration.y - std::sin(roll) * imu_data_.linear_acceleration.z;
+    double acc_z1 = std::sin(roll) * imu_data_.linear_acceleration.y + std::cos(roll) * imu_data_.linear_acceleration.z;
+
+    double acc_x2 = std::sin(pitch) * acc_z1 + std::cos(pitch) * acc_x1;
+    double acc_y2 = acc_y1;
+    double acc_z2 = std::cos(pitch) * acc_z1 - std::sin(pitch) * acc_x1;
+
+    double acc_x = std::cos(yaw) * acc_x2 - std::sin(yaw) * acc_y2;
+    double acc_y = std::sin(yaw) * acc_x2 + std::cos(yaw) * acc_y2;
+    double acc_z = acc_z2;
+
+    double offset_translation_imu_x = imu_velocity_.x * dt + acc_x * dt * dt / 2.0;
+    double offset_translation_imu_y = imu_velocity_.y * dt + acc_y * dt * dt / 2.0;
+    double offset_translation_imu_z = imu_velocity_.z * dt + acc_z * dt * dt / 2.0;
+
+    imu_velocity_.x += acc_x * dt;
+    imu_velocity_.y += acc_y * dt;
+    imu_velocity_.z += acc_z * dt;
+
+    initial_pose_.position.x += offset_translation_imu_x;
+    initial_pose_.position.y += offset_translation_imu_y;
+    initial_pose_.position.z += offset_translation_imu_z;
+  }
 
   // calculation initial pose for NDT
   Eigen::Matrix4f init_guess = Eigen::Matrix4f::Identity();
@@ -173,6 +226,15 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
   Eigen::Affine3d result_ndt_pose_affine;
   result_ndt_pose_affine.matrix() = result_ndt_pose.cast<double>();
   const geometry_msgs::msg::Pose ndt_pose = tf2::toMsg(result_ndt_pose_affine);
+
+  // estimate velocity
+  double dx = ndt_pose.position.x - initial_pose_.position.x;
+  double dy = ndt_pose.position.y - initial_pose_.position.y;
+  double dz = ndt_pose.position.z - initial_pose_.position.z;
+  velocity_.x = (dt > 0.0) ? (dx / dt) : 0.0;
+  velocity_.y = (dt > 0.0) ? (dy / dt) : 0.0;
+  velocity_.z = (dt > 0.0) ? (dz / dt) : 0.0;
+  imu_velocity_ = velocity_;
   initial_pose_ = ndt_pose;
 
   geometry_msgs::msg::PoseStamped ndt_pose_msg;
@@ -222,6 +284,12 @@ void NDTLocalization::initialPoseCallback(const geometry_msgs::msg::PoseWithCova
     RCLCPP_INFO(
       get_logger(), "frame_id is not same. initialpose.header.frame_id is %s", initialpose.header.frame_id.c_str());
   }
+  imu_velocity_.x = 0.0;
+  imu_velocity_.y = 0.0;
+  imu_velocity_.z = 0.0;
+  velocity_.x = 0.0;
+  velocity_.y = 0.0;
+  velocity_.z = 0.0;
 }
 
 void NDTLocalization::publishTF(

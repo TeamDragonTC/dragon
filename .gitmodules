@@ -1,0 +1,6 @@
+[submodule "dragon_localization/fast_gicp"]
+	path = dragon_localization/fast_gicp
+	url = https://github.com/RyuYamamoto/fast_gicp.git
+[submodule "dragon_localization/ndt_omp"]
+	path = dragon_localization/ndt_omp
+	url = git@github.com:RyuYamamoto/ndt_omp.git
