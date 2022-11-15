@@ -1,8 +1,10 @@
 #ifndef _NDT_LOCALIZATION_
 #define _NDT_LOCALIZATION_
 
+#include <geometry_msgs/msg/detail/vector3__struct.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -49,9 +51,7 @@ private:
 
   void
   downsample(const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr& output_cloud_ptr);
-  void crop(
-    const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr,
-    const double min_range, const double max_range);
+  void crop(const pcl::PointCloud<PointType>::Ptr& input_cloud_ptr, pcl::PointCloud<PointType>::Ptr output_cloud_ptr);
 
   void
   publishTF(const std::string frame_id, const std::string child_frame_id, const geometry_msgs::msg::PoseStamped pose);
@@ -79,6 +79,12 @@ private:
 
   std::deque<geometry_msgs::msg::PoseStamped> pose_queue_;
 
+  geometry_msgs::msg::Vector3 imu_velocity_;
+  geometry_msgs::msg::Vector3 velocity_;
+
+  bool correct_translation_offset_;
+  bool correct_orientation_offset_;
+
   // config for ndt omp
   double transformation_epsilon_;
   double step_size_;
@@ -90,8 +96,17 @@ private:
 
   double downsample_leaf_size_;
 
-  double min_range_;
-  double max_range_;
+  double min_crop_vehicle_x_;
+  double max_crop_vehicle_x_;
+  double min_crop_vehicle_y_;
+  double max_crop_vehicle_y_;
+
+  double min_range_x_;
+  double max_range_x_;
+  double min_range_y_;
+  double max_range_y_;
+  double min_range_z_;
+  double max_range_z_;
 
   bool localization_ready_{ false };
 };
