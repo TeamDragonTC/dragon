@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dragon</name>
+  <version>0.0.0</version>
+  <description>The dragon package</description>
+
+  <maintainer email="rottertarmenation.y11.r18@gmali.com">RyuYamamoto</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <depend>dragon_bringup</depend>
+  <depend>dragon_control</depend>
+  <depend>dragon_description</depend>
+  <depend>dragon_localization</depend>
+  <depend>dragon_perception</depend>
+  <depend>dragon_planner</depend>
+  <depend>dragon_sensing</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
