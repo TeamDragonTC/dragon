@@ -140,11 +140,13 @@ public:
     geometry_msgs::msg::Twist twist;
 
     if (!safety_check_) {
-      if (0.0 < msg->linear.x)
+      if (0.0 <= msg->linear.x) {
         twist.linear.x = 0.0;
-      else
+        twist.angular.z = 0.0;
+      } else {
         twist.linear.x = msg->linear.x;
-      twist.angular.z = msg->angular.z;
+        twist.angular.z = msg->angular.z;
+      }
     } else {
       twist.linear.x = msg->linear.x;
       twist.angular.z = msg->angular.z;

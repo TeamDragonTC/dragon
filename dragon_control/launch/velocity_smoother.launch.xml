@@ -1,11 +1,11 @@
 <launch>
   <arg name="velocity_gain" default="1.7"/>
   <arg name="angular_gain" default="1.7"/>
-  <arg name="maximum_limit_vel" default="0.5"/>
-  <arg name="minimum_limit_vel" default="-0.5"/>
-  <arg name="maximum_limit_omega" default="0.25"/>
-  <arg name="minimum_limit_omega" default="-0.25"/>
-  <arg name="in_twist" default="/planning/safety_cmd_vel"/>
+  <arg name="maximum_limit_vel" default="1.0"/>
+  <arg name="minimum_limit_vel" default="-1.0"/>
+  <arg name="maximum_limit_omega" default="0.5"/>
+  <arg name="minimum_limit_omega" default="-0.5"/>
+  <arg name="in_twist" default="/cmd_vel_raw"/>
   <arg name="out_twist" default="cmd_vel"/>
 
   <node pkg="dragon_control" exec="velocity_smoother" name="velocity_smoother">

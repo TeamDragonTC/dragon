@@ -3,7 +3,7 @@
 
     foot_print: [0.2, 0.4, 0.2, -0.4, 0.8, -0.5, 0.8, 0.5]
 
-    leaf_size: 0.02
+    leaf_size: 0.5
 
     use_debug: true
 

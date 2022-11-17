@@ -5,9 +5,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
+#include <sensor_msgs/msg/joy.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <std_msgs/msg/detail/color_rgba__struct.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
 class WayPointGenerator : public rclcpp::Node
@@ -17,6 +17,7 @@ public:
   ~WayPointGenerator() = default;
 
   void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+  void joyCallback(const sensor_msgs::msg::Joy::SharedPtr msg);
 
   double getDist(const geometry_msgs::msg::Pose pose_1, const geometry_msgs::msg::Pose pose_2);
   double getVelocity(const geometry_msgs::msg::Pose pose_1, const geometry_msgs::msg::Pose pose_2, const double dt);
@@ -28,13 +29,16 @@ public:
     geometry_msgs::msg::Vector3 scale, std_msgs::msg::ColorRGBA color);
 
 private:
+  rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_;
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_subscriber_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr waypoint_marker_publisher_;
 
   int id_{ 0 };
   int way_point_id_{ 0 };
+  int way_point_csv_index_{0};
   double threshold_;
   std::string way_point_csv_path_;
+  std::string way_point_csv_file_name_;
 };
 
 #endif
