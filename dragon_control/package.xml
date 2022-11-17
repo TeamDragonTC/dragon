@@ -15,7 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>twist-mux</depend>
+  <depend>twist_mux</depend>
 
   <exec_depend>launch_ros</exec_depend>
   <test_depend>ament_lint_auto</test_depend>
