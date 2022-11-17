@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dragon_sensing</name>
+  <version>0.0.0</version>
+  <description>The dragon_sensing package</description>
+
+  <maintainer email="rottertarmenation.y11.r18@gmali.com">RyuYamamoto</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <depend>ess_imu_ros2_uart_driver</depend>
+  <depend>rtcm_msgs</depend>
+  <depend>ublox</depend>
+  <depend>velodyne</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
