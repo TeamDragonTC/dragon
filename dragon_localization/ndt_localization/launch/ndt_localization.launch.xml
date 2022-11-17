@@ -28,8 +28,9 @@
   </include>
 
   <node pkg="ndt_localization" exec="ndt_localization_node" name="ndt_localization_node" output="screen">
-    <remap from="points_map" to="points_map"/>
     <remap from="points_raw" to="/velodyne_points"/>
+    <remap from="ndt_pose" to="/localization/pose"/>
+    <remap from="ndt_pose_with_covariance" to="/localization/pose_with_covariance"/>
     <param name="correct_translation_offset" value="$(var correct_translation_offset)"/>
     <param name="correct_orientation_offset" value="$(var correct_orientation_offset)"/>
     <param name="min_crop_vehicle_x" value="$(var min_crop_vehicle_x)"/>
@@ -52,5 +53,7 @@
     <param name="base_frame_id" value="$(var base_frame_id)"/>
   </node>
 
-  <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share ndt_localization)/rviz/ndt.rviz"/>
+  <group if="$(var rviz)">
+    <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share ndt_localization)/rviz/ndt.rviz"/>
+  </group>
 </launch>

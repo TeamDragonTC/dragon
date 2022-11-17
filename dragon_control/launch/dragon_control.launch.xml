@@ -1,11 +1,19 @@
 <launch>
-  <node pkg="joy_linux" exec="joy_linux_node" name="joy_linux_node"/>
+  <arg name="use_driver" default="true"/>
 
-  <node pkg="dragon_control" exec="cugo_teleop_twist_joy" name="cugo_teleop_twist_joy">
-    <remap from="twist" to="cmd_vel_raw"/>
-  </node>
+  <include file="$(find-pkg-share dragon_control)/launch/twist_mux.launch.py"/>
 
-  <include file="$(find-pkg-share dragon_control)/launch/velocity_smoother.launch.xml"/>
+  <include file="$(find-pkg-share obstacle_stop_planner)/launch/obstacle_surround_stop_planner.launch.xml">
+    <arg name="cmd_vel_in" value="/cmd_vel_mux"/>
+    <arg name="cmd_vel_out" value="/cmd_vel_safety"/>
+  </include>
 
-  <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen"/>
+  <include file="$(find-pkg-share dragon_control)/launch/velocity_smoother.launch.xml">
+    <arg name="in_twist" value="/cmd_vel_safety"/>
+    <arg name="out_twist" value="/cmd_vel"/>
+  </include>
+
+  <group if="$(var use_driver)">
+    <node pkg="dragon_control" exec="cugo_teleop_node.py" name="cugo_teleop_node" output="screen"/>
+  </group>
 </launch>

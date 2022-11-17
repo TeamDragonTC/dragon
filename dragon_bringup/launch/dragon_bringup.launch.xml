@@ -1,13 +1,37 @@
 <launch>
-  <!-- launch robot model -->
-  <include file="$(find-pkg-share dragon_bringup)/launch/tf.launch.py"/>
+  <arg name="use_driver" default="true"/>
+  <arg name="rviz" default="true"/>
+  <arg name="model" default="true"/>
+  <arg name="waypoint_path" default="waypoint_path"/>
+  <arg name="map_path" default="map_path"/>
 
-  <!-- launch control module -->
-  <include file="$(find-pkg-share dragon_control)/launch/dragon_control.launch.xml"/>
+  <!-- launch teleop -->
+  <include file="$(find-pkg-share dragon_control)/launch/dragon_teleop.launch.xml"/>
+
+  <!-- launch robot model -->
+  <group if="$(var model)">
+    <include file="$(find-pkg-share dragon_bringup)/launch/tf.launch.py"/>
+  </group>
 
   <!-- launch sensing module -->
+  <include file="$(find-pkg-share velodyne_driver)/launch/velodyne_driver_node-VLP16-launch.py"/>
+  <include file="$(find-pkg-share velodyne_pointcloud)/launch/velodyne_convert_node-VLP16-launch.py"/>
+
+  <!-- launch localization module -->
+  <include file="$(find-pkg-share ndt_localization)/launch/ndt_localization.launch.xml">
+    <arg name="map_path" value="$(var map_path)"/>
+    <arg name="rviz" value="false"/>
+  </include>
 
   <!-- launch planning module -->
+  <include file="$(find-pkg-share dragon_bringup)/launch/planning.launch.xml">
+    <arg name="waypoint_path" value="$(var waypoint_path)"/>
+  </include>
+
+  <!-- launch control module -->
+  <include file="$(find-pkg-share dragon_control)/launch/dragon_control.launch.xml">
+    <arg name="use_driver" value="$(var use_driver)"/>
+  </include>
 
   <!-- launch rviz -->
   <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share dragon_bringup)/rviz/dragon.rviz"/>

@@ -7,12 +7,15 @@ WayPointGenerator::WayPointGenerator() : Node("waypoint_generator")
   way_point_csv_path_ = this->declare_parameter("way_point_csv_path", "");
   threshold_ = this->declare_parameter("threshold", 0.0);
 
+  way_point_csv_file_name_ = "way_point_" + std::to_string(way_point_csv_index_) + ".csv";
+
+  joy_subscriber_ = this->create_subscription<sensor_msgs::msg::Joy>("joy", 5, std::bind(&WayPointGenerator::joyCallback, this, std::placeholders::_1));
   pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "pose_with_covariance", 5, std::bind(&WayPointGenerator::poseCallback, this, std::placeholders::_1));
 
   waypoint_marker_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("waypoint_marker", 5);
 
-  std::ofstream ofs(way_point_csv_path_);
+  std::ofstream ofs(way_point_csv_path_ + "/" + way_point_csv_file_name_);
   // clang-format off
   ofs << "way point ID" << "," 
       << "pose.position.x" << ","
@@ -24,6 +27,27 @@ WayPointGenerator::WayPointGenerator() : Node("waypoint_generator")
       << "pose.orientation.w" << ","
       << "target velocity" << std::endl;
   // clang-format on
+}
+
+void WayPointGenerator::joyCallback(const sensor_msgs::msg::Joy::SharedPtr msg)
+{
+  static auto prev_joy_msg = msg;
+  if(prev_joy_msg->buttons[1] == 0 and msg->buttons[1] == 1) {
+    way_point_csv_file_name_ = "way_point_" + std::to_string(++way_point_csv_index_) + ".csv";
+    std::ofstream ofs(way_point_csv_path_ + "/" + way_point_csv_file_name_);
+    // clang-format off
+    ofs << "way point ID" << "," 
+        << "pose.position.x" << ","
+        << "pose.position.y" << ","
+        << "pose.position.z" << ","
+        << "pose.orientation.x" << ","
+        << "pose.orientation.y" << ","
+        << "pose.orientation.z" << ","
+        << "pose.orientation.w" << ","
+        << "target velocity" << std::endl;
+    // clang-format on
+  }
+  prev_joy_msg = msg;
 }
 
 double WayPointGenerator::getDist(const geometry_msgs::msg::Pose pose_1, const geometry_msgs::msg::Pose pose_2)
@@ -100,7 +124,7 @@ void WayPointGenerator::poseCallback(const geometry_msgs::msg::PoseWithCovarianc
   if (id_ == 0)
     linear_velocity = 0.0;
 
-  std::ofstream ofs(way_point_csv_path_, std::ios::app);
+  std::ofstream ofs(way_point_csv_path_ + "/" + way_point_csv_file_name_, std::ios::app);
   // clang-format off
   ofs << way_point_id_++ << ","
       << msg->pose.pose.position.x << ","

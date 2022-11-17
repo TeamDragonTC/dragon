@@ -26,13 +26,13 @@ class CubicSplinePath(Node):
             Path, '/planning/path', qos_profile)
         waypoint_path = self.declare_parameter('waypoint_path', '/home/haze/Desktop/waypoint.csv').value
         waypoints = pd.read_csv(waypoint_path)
-        waypoint_x, waypoint_y = self.interpolation(waypoints)
+        #waypoint_x, waypoint_y = self.interpolation(waypoints)
 
         path = Path()
-        for index in range(len(waypoint_x)):
+        for index in range(len(waypoints['pose.position.x'])):
             pose = PoseStamped()
-            pose.pose.position.x = waypoint_x[index]
-            pose.pose.position.y = waypoint_y[index]
+            pose.pose.position.x = waypoints['pose.position.x'][index]
+            pose.pose.position.y = waypoints['pose.position.y'][index]
             path.poses.append(pose)
         path.header.frame_id = "map"
         path.header.stamp = self.get_clock().now().to_msg()

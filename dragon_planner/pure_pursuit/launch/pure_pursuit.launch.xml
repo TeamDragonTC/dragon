@@ -1,11 +1,17 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="waypoint_path" default="waypoint"/>
+  <arg name="cmd_vel" default="cmd_vel"/>
+  <arg name="pose_with_covariance" default="pose_with_covariance"/>
+
   <node name="pure_pursuit_node" pkg="pure_pursuit" exec="pure_pursuit_node" output="screen">
+    <param name="waypoint_path" value="$(var waypoint_path)"/>
     <param name="rate" value="0.1"/>
-    <param name="target_vel" value="0.2"/>
-    <param name="goal_threshold" value="0.2"/>
-    <remap from="path" to="/planning/path"/>
-    <remap from="pose_with_covariance" to="/localization/pose_with_covariance"/>
-    <remap from="cmd_vel" to="/planning/plan_cmd_vel"/>
+    <param name="target_vel" value="0.5"/>
+    <param name="goal_threshold" value="0.5"/>
+    <param name="yaw_velocity_limit" value="0.2"/>
+    <param name="target_way_point" value="2"/>
+    <remap from="pose_with_covariance" to="$(var pose_with_covariance)"/>
+    <remap from="cmd_vel" to="$(var cmd_vel)"/>
   </node>
 </launch>
