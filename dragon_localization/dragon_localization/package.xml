@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dragon_localization</name>
+  <version>0.0.0</version>
+  <description>The dragon_localization package</description>
+
+  <maintainer email="rottertarmenation.y11.r18@gmali.com">RyuYamamoto</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <depend>icp_localization</depend>
+  <depend>ndt_localization</depend>
+  <depend>particle_filter_localization</depend>
+  <depend>odom2twist</depend>
+  <depend>points_map_loader</depend>
+  <depend>ndt_omp</depend>
+  <depend>fast_gicp</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
