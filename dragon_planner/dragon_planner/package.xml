@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dragon_planner</name>
+  <version>0.0.0</version>
+  <description>The dragon_planner package</description>
+
+  <maintainer email="rottertarmenation.y11.r18@gmali.com">RyuYamamoto</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <depend>obstacle_stop_planner</depend>
+  <depend>pure_pursuit</depend>
+  <depend>waypoint_generator</depend>
+  <depend>odom2twist</depend>
+  <depend>waypoint_planner</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
