@@ -4,3 +4,9 @@
 [submodule "dragon_localization/ndt_omp"]
 	path = dragon_localization/ndt_omp
 	url = git@github.com:RyuYamamoto/ndt_omp.git
+[submodule "dragon_sensing/ublox"]
+	path = dragon_sensing/ublox
+	url = git@github.com:KumarRobotics/ublox.git
+[submodule "dragon_sensing/velodyne"]
+	path = dragon_sensing/velodyne
+	url = git@github.com:TeamDragonTC/velodyne
