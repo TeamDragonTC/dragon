@@ -7,10 +7,10 @@
   <arg name="max_crop_vehicle_x" default="1.0"/>
   <arg name="min_crop_vehicle_y" default="-1.0"/>
   <arg name="max_crop_vehicle_y" default="1.0"/>
-  <arg name="min_range_x" default="-80.0"/>
-  <arg name="max_range_x" default="80.0"/>
-  <arg name="min_range_y" default="80.0"/>
-  <arg name="max_range_y" default="80.0"/>
+  <arg name="min_range_x" default="-70.0"/>
+  <arg name="max_range_x" default="70.0"/>
+  <arg name="min_range_y" default="70.0"/>
+  <arg name="max_range_y" default="70.0"/>
   <arg name="min_range_z" default="-30.0"/>
   <arg name="max_range_z" default="50.0"/>
   <arg name="downsample_leaf_size" default="1.0"/>

@@ -53,6 +53,9 @@ NDTLocalization::NDTLocalization() : Node("ndt_localization")
   initialpose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "/initialpose", 1, std::bind(&NDTLocalization::initialPoseCallback, this, std::placeholders::_1));
 
+  ndt_result_path_.header.frame_id = map_frame_id_;
+
+  ndt_path_publisher_ = this->create_publisher<nav_msgs::msg::Path>("ndt_result_path", 5);
   ndt_align_cloud_publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("aligned_cloud", 10);
   ndt_pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("ndt_pose", 10);
   ndt_pose_with_covariance_publisher_ =
@@ -84,7 +87,7 @@ void NDTLocalization::crop(
 
 void NDTLocalization::imuCallback(const sensor_msgs::msg::Imu& imu)
 {
-  imu_data_ = imu;
+  imu_queue_.emplace_back(imu);
 }
 
 void NDTLocalization::suggestInitPoseCallback(const geometry_msgs::msg::PoseStamped& suggest_init_pose)
@@ -165,49 +168,66 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
   tf2::Matrix3x3 mat(quat);
   mat.getRPY(roll, pitch, yaw);
 
-  // corrent orientation
-  if (correct_orientation_offset_) {
-    double roll, pitch, yaw;
-    tf2::Quaternion quat(
-      initial_pose_.orientation.x, initial_pose_.orientation.y, initial_pose_.orientation.z,
-      initial_pose_.orientation.w);
-    tf2::Matrix3x3 mat(quat);
-    mat.getRPY(roll, pitch, yaw);
-    roll += (imu_data_.angular_velocity.x * dt);
-    pitch += (imu_data_.angular_velocity.y * dt);
-    yaw += (imu_data_.angular_velocity.z * dt);
-    quat.setRPY(roll, pitch, yaw);
-    initial_pose_.orientation.x = quat.x();
-    initial_pose_.orientation.y = quat.y();
-    initial_pose_.orientation.z = quat.z();
-    initial_pose_.orientation.w = quat.w();
-  }
+  if(!imu_queue_.empty()) {
+    // get latest imu data
+    sensor_msgs::msg::Imu latest_imu_msgs;
+    for(auto & imu : imu_queue_) {
+      latest_imu_msgs = imu;
+      const auto time_stamp = latest_imu_msgs.header.stamp;
+      if(current_scan_time < time_stamp) {
+        break;
+      }
+    }
+    while(!imu_queue_.empty()) {
+      if(rclcpp::Time(imu_queue_.front().header.stamp) >= current_scan_time) {
+        break;
+      }
+      imu_queue_.pop_front();
+    }
+    // corrent orientation
+    if (correct_orientation_offset_) {
+      double roll, pitch, yaw;
+      tf2::Quaternion quat(
+        initial_pose_.orientation.x, initial_pose_.orientation.y, initial_pose_.orientation.z,
+        initial_pose_.orientation.w);
+      tf2::Matrix3x3 mat(quat);
+      mat.getRPY(roll, pitch, yaw);
+      roll += (imu_data_.angular_velocity.x * dt);
+      pitch += (imu_data_.angular_velocity.y * dt);
+      yaw += (imu_data_.angular_velocity.z * dt);
+      quat.setRPY(roll, pitch, yaw);
+      initial_pose_.orientation.x = quat.x();
+      initial_pose_.orientation.y = quat.y();
+      initial_pose_.orientation.z = quat.z();
+      initial_pose_.orientation.w = quat.w();
+    }
 
-  // correct offset
-  if (correct_translation_offset_) {
-    double acc_x1 = imu_data_.linear_acceleration.x;
-    double acc_y1 = std::cos(roll) * imu_data_.linear_acceleration.y - std::sin(roll) * imu_data_.linear_acceleration.z;
-    double acc_z1 = std::sin(roll) * imu_data_.linear_acceleration.y + std::cos(roll) * imu_data_.linear_acceleration.z;
+    // correct offset
+    if (correct_translation_offset_) {
+      double acc_x1 = imu_data_.linear_acceleration.x;
+      double acc_y1 = std::cos(roll) * imu_data_.linear_acceleration.y - std::sin(roll) * imu_data_.linear_acceleration.z;
+      double acc_z1 = std::sin(roll) * imu_data_.linear_acceleration.y + std::cos(roll) * imu_data_.linear_acceleration.z;
 
-    double acc_x2 = std::sin(pitch) * acc_z1 + std::cos(pitch) * acc_x1;
-    double acc_y2 = acc_y1;
-    double acc_z2 = std::cos(pitch) * acc_z1 - std::sin(pitch) * acc_x1;
+      double acc_x2 = std::sin(pitch) * acc_z1 + std::cos(pitch) * acc_x1;
+      double acc_y2 = acc_y1;
+      double acc_z2 = std::cos(pitch) * acc_z1 - std::sin(pitch) * acc_x1;
 
-    double acc_x = std::cos(yaw) * acc_x2 - std::sin(yaw) * acc_y2;
-    double acc_y = std::sin(yaw) * acc_x2 + std::cos(yaw) * acc_y2;
-    double acc_z = acc_z2;
+      double acc_x = std::cos(yaw) * acc_x2 - std::sin(yaw) * acc_y2;
+      double acc_y = std::sin(yaw) * acc_x2 + std::cos(yaw) * acc_y2;
+      double acc_z = acc_z2;
 
-    double offset_translation_imu_x = imu_velocity_.x * dt + acc_x * dt * dt / 2.0;
-    double offset_translation_imu_y = imu_velocity_.y * dt + acc_y * dt * dt / 2.0;
-    double offset_translation_imu_z = imu_velocity_.z * dt + acc_z * dt * dt / 2.0;
+      double offset_translation_imu_x = imu_velocity_.x * dt + acc_x * dt * dt / 2.0;
+      double offset_translation_imu_y = imu_velocity_.y * dt + acc_y * dt * dt / 2.0;
+      double offset_translation_imu_z = imu_velocity_.z * dt + acc_z * dt * dt / 2.0;
 
-    imu_velocity_.x += acc_x * dt;
-    imu_velocity_.y += acc_y * dt;
-    imu_velocity_.z += acc_z * dt;
+      imu_velocity_.x += acc_x * dt;
+      imu_velocity_.y += acc_y * dt;
+      imu_velocity_.z += acc_z * dt;
 
-    initial_pose_.position.x += offset_translation_imu_x;
-    initial_pose_.position.y += offset_translation_imu_y;
-    initial_pose_.position.z += offset_translation_imu_z;
+      initial_pose_.position.x += offset_translation_imu_x;
+      initial_pose_.position.y += offset_translation_imu_y;
+      initial_pose_.position.z += offset_translation_imu_z;
+    }
   }
 
   // calculation initial pose for NDT
@@ -242,6 +262,8 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
   ndt_pose_msg.header.stamp = current_scan_time;
   ndt_pose_msg.pose = ndt_pose;
 
+  ndt_result_path_.poses.emplace_back(ndt_pose_msg);
+
   // TODO: replace covariance from hessian matrix
   geometry_msgs::msg::PoseWithCovarianceStamped ndt_pose_with_covariance_msg;
   ndt_pose_with_covariance_msg.header.frame_id = map_frame_id_;
@@ -259,6 +281,9 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
     ndt_pose_with_covariance_publisher_->publish(ndt_pose_with_covariance_msg);
     publishTF(map_frame_id_, "base_link", ndt_pose_msg);
   }
+
+  ndt_result_path_.header.stamp = current_scan_time;
+  ndt_path_publisher_->publish(ndt_result_path_);
 
   std_msgs::msg::Float32 transform_probability;
   transform_probability.data = ndt_->getTransformationProbability();
