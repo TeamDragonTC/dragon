@@ -204,6 +204,8 @@ void NDTLocalization::pointsCallback(const sensor_msgs::msg::PointCloud2& points
 
     // correct offset
     if (correct_translation_offset_) {
+      imu_data_.linear_acceleration.x -= 0.1225;
+      imu_data_.linear_acceleration.y -= 0.4909;
       double acc_x1 = imu_data_.linear_acceleration.x;
       double acc_y1 = std::cos(roll) * imu_data_.linear_acceleration.y - std::sin(roll) * imu_data_.linear_acceleration.z;
       double acc_z1 = std::sin(roll) * imu_data_.linear_acceleration.y + std::cos(roll) * imu_data_.linear_acceleration.z;
