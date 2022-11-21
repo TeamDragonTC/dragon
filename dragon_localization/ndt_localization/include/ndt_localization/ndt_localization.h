@@ -4,6 +4,7 @@
 #include <geometry_msgs/msg/detail/vector3__struct.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <nav_msgs/msg/path.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -66,17 +67,20 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr ndt_pose_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ndt_pose_with_covariance_publisher_;
   rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr transform_probability_publisher_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr ndt_path_publisher_;
 
   // ndt_omp
   std::shared_ptr<pclomp::NormalDistributionsTransform<PointType, PointType>> ndt_;
 
   geometry_msgs::msg::Pose initial_pose_;
   sensor_msgs::msg::Imu imu_data_;
+  nav_msgs::msg::Path ndt_result_path_;
 
   tf2_ros::Buffer tf_buffer_{ get_clock() };
   tf2_ros::TransformListener tf_listener_{ tf_buffer_ };
   std::shared_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
 
+  std::deque<sensor_msgs::msg::Imu> imu_queue_;
   std::deque<geometry_msgs::msg::PoseStamped> pose_queue_;
 
   geometry_msgs::msg::Vector3 imu_velocity_;

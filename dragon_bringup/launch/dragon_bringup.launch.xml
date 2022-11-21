@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_driver" default="true"/>
   <arg name="rviz" default="true"/>
-  <arg name="model" default="true"/>
+  <arg name="tf" default="true"/>
   <arg name="waypoint_path" default="waypoint_path"/>
   <arg name="map_path" default="map_path"/>
 
@@ -9,7 +9,7 @@
   <include file="$(find-pkg-share dragon_control)/launch/dragon_teleop.launch.xml"/>
 
   <!-- launch robot model -->
-  <group if="$(var model)">
+  <group if="$(var tf)">
     <include file="$(find-pkg-share dragon_bringup)/launch/tf.launch.py"/>
   </group>
 
