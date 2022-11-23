@@ -1,6 +1,5 @@
 <launch>
   <arg name="use_driver" default="true"/>
-  <arg name="sim" default="true"/>
   <arg name="rviz" default="true"/>
   <arg name="tf" default="true"/>
   <arg name="waypoint_path" default="waypoint_path"/>
