@@ -10,7 +10,7 @@ Panels:
         - /ndt map1/Topic1
         - /waypoint_marker1/Topic1
       Splitter Ratio: 0.5
-    Tree Height: 719
+    Tree Height: 363
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ndt map
+    SyncSource: velodyne
 Visualization Manager:
   Class: ""
   Displays:
@@ -54,18 +54,30 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
+        0:
+          Value: true
+        1:
+          Value: true
+        2:
+          Value: true
+        3:
+          Value: true
         All Enabled: false
         base_link:
           Value: true
-        base_link_gt:
+        cugo_v3_left_link:
           Value: true
-        imu_link:
+        cugo_v3_right_link:
           Value: true
-        lidar3d_link:
+        gnss_link:
+          Value: true
+        ground_truth:
           Value: true
         map:
           Value: true
-        odom:
+        upper_frame_link:
+          Value: true
+        velodyne:
           Value: true
         world:
           Value: true
@@ -75,9 +87,29 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          world:
-            {}
+        world:
+          map:
+            0:
+              {}
+            1:
+              {}
+            2:
+              {}
+            3:
+              {}
+            base_link:
+              cugo_v3_left_link:
+                {}
+              cugo_v3_right_link:
+                {}
+              gnss_link:
+                {}
+              upper_frame_link:
+                {}
+              velodyne:
+                {}
+            ground_truth:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -98,6 +130,35 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cugo_v3_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cugo_v3_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gnss_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_frame_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        velodyne:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -277,7 +338,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.769999623298645
+      Angle: -0.1650000661611557
       Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -287,11 +348,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 15.82946491241455
-      Target Frame: world
+      Scale: 79.97447967529297
+      Target Frame: base_link
       Value: TopDownOrtho (rviz_default_plugins)
-      X: -38.67802810668945
-      Y: -4.6968464851379395
+      X: -0.23904849588871002
+      Y: 0.07459354400634766
     Saved: ~
 Window Geometry:
   Displays:
@@ -309,5 +370,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 939
-  X: 981
-  Y: 27
+  X: 2007
+  Y: 294
