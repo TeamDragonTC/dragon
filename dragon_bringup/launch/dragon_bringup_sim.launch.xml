@@ -1,8 +1,7 @@
 <launch>
-  <arg name="use_driver" default="true"/>
-  <arg name="sim" default="true"/>
   <arg name="rviz" default="true"/>
   <arg name="tf" default="true"/>
+  <arg name="nav_sim" default="true"/>
   <arg name="waypoint_path" default="waypoint_path"/>
   <arg name="map_path" default="map_path"/>
 
@@ -14,16 +13,6 @@
     <include file="$(find-pkg-share dragon_bringup)/launch/tf.launch.py"/>
   </group>
 
-  <!-- launch sensing module -->
-  <include file="$(find-pkg-share velodyne_driver)/launch/velodyne_driver_node-VLP16-launch.py"/>
-  <include file="$(find-pkg-share velodyne_pointcloud)/launch/velodyne_convert_node-VLP16-launch.py"/>
-
-  <!-- launch localization module -->
-  <include file="$(find-pkg-share ndt_localization)/launch/ndt_localization.launch.xml">
-    <arg name="map_path" value="$(var map_path)"/>
-    <arg name="rviz" value="false"/>
-  </include>
-
   <!-- launch planning module -->
   <include file="$(find-pkg-share dragon_bringup)/launch/planning.launch.xml">
     <arg name="waypoint_path" value="$(var waypoint_path)"/>
@@ -31,9 +20,15 @@
 
   <!-- launch control module -->
   <include file="$(find-pkg-share dragon_control)/launch/dragon_control.launch.xml">
-    <arg name="use_driver" value="$(var use_driver)"/>
+    <arg name="use_driver" value="false"/>
   </include>
 
+  <!-- launch simulation -->
+  <group if="$(var nav_sim)">
+    <include file="$(find-pkg-share nav_sim)/launch/nav_sim_bringup.launch.xml">
+      <arg name="rviz" value="false"/>
+    </include>
+  </group>
   <!-- launch rviz -->
   <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share dragon_bringup)/rviz/dragon.rviz"/>
 </launch>
