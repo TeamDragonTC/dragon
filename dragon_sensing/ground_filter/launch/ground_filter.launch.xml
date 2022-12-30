@@ -1,0 +1,19 @@
+<launch>
+  <arg name="angle_threshold" default="40.0"/>
+  <arg name="height_threshold" default="2.0"/>
+  <arg name="resolution" default="0.2"/>
+  <arg name="line" default="16"/>
+  <arg name="fov_up" default="15.0"/>
+  <arg name="fov_down" default="-15.0"/>
+  <arg name="bottom_ring" default="0"/>
+
+  <node pkg="ground_filter" exec="ground_filter_node" name="ground_filter_node" output="screen">
+    <param name="angle_threshold" value="$(var angle_threshold)"/>
+    <param name="height_threshold" value="$(var height_threshold)"/>
+    <param name="resolution" value="$(var resolution)"/>
+    <param name="line" value="$(var line)"/>
+    <param name="fov_up" value="$(var fov_up)"/>
+    <param name="fov_down" value="$(var fov_down)"/>
+    <param name="bottom_ring" value="$(var bottom_ring)"/>
+  </node>
+</launch>
